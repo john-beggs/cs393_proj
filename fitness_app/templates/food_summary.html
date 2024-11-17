@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Food Summary</title>
+</head>
+<body>
+    <h1>Food Summary</h1>
+    {% if error_message %}
+        <p>{{ error_message }}</p>
+    {% else %}
+        <h2>Weekly Summary</h2>
+        <ul>
+            <li>Carbohydrates: {{ weekly_totals.carbohydrate }} g</li>
+            <li>Protein: {{ weekly_totals.protein }} g</li>
+            <li>Fat: {{ weekly_totals.fat }} g</li>
+            <li>Kilocalories: {{ weekly_totals.kilocalories }}</li>
+        </ul>
+        <h2>Monthly Summary</h2>
+        <ul>
+            <li>Carbohydrates: {{ monthly_totals.carbohydrate }} g</li>
+            <li>Protein: {{ monthly_totals.protein }} g</li>
+            <li>Fat: {{ monthly_totals.fat }} g</li>
+            <li>Kilocalories: {{ monthly_totals.kilocalories }}</li>
+        </ul>
+
+        <h2>Weekly Logs</h2>
+        <ul>
+            {% for log in week_logs %}
+                <li>{{ log.date }} - {{ log.description }}: {{ log.kilocalories }} kcal</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

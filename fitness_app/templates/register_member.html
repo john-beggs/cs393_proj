@@ -1,14 +1,59 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Member</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <h1>Register a New Member</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-    </form>
+    <header>
+        <h1>Register a New Member</h1>
+    </header>
+    <main>
+        <form method="post" class="form-container">
+            {% csrf_token %}
+            <div>
+                <label for="id_name">Name:</label>
+                {{ form.name }}
+            </div>
+            <div>
+                <label for="id_street_address">Street Address:</label>
+                {{ form.street_address }}
+            </div>
+            <div>
+                <label for="id_city">City:</label>
+                {{ form.city }}
+            </div>
+            <div>
+                <label for="id_state">State:</label>
+                {{ form.state }}
+            </div>
+            <div>
+                <label for="id_zipcode">Zipcode:</label>
+                {{ form.zipcode }}
+            </div>
+            <div>
+                <label>Date of Birth:</label>
+                {{ form.date_of_birth_year }}
+                {{ form.date_of_birth_month }}
+                {{ form.date_of_birth_day }}
+            </div>
+            <div>
+                <label for="id_goal_description">Goal Description:</label>
+                {{ form.goal_description }}
+            </div>
+            <div>
+                <label for="id_goal_date">Goal Date:</label>
+                {{ form.goal_date }}
+            </div>
+            <button type="submit" class="button">Register</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
 </body>
 </html>
+

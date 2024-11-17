@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome, {{ user.username }}!</h1>
+    </header>
+    <main>
+        <section class="dashboard-container">
+            <h2>Your Dashboard</h2>
+            <p>Track your fitness progress and nutrition goals here.</p>
+            <div class="button-container">
+                <a href="{% url 'log_food_intake' %}" class="button">Log Food Intake</a>
+                <a href="#" class="button disabled">View Workout History</a>
+                <a href="#" class="button disabled">Track Progress</a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

@@ -1,17 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Schedule Training Session</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule a Training Session</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <h1>Schedule a Training Session</h1>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Schedule</button>
-    </form>
+    <header>
+        <h1>Schedule a Training Session</h1>
+    </header>
+    <main>
+        <form method="post" class="form-container">
+            {% csrf_token %}
+            <div>
+                <label for="id_member">Member:</label>
+                {{ form.member }}
+            </div>
+            <div>
+                <label for="id_trainer">Trainer:</label>
+                {{ form.trainer }}
+            </div>
+            <div>
+                <label for="id_space">Space:</label>
+                {{ form.space }}
+            </div>
+            <div>
+                <label>Date:</label>
+                {{ form.date_year }}
+                {{ form.date_month }}
+                {{ form.date_day }}
+            </div>
+            <div>
+                <label>Time:</label>
+                {{ form.time_hour }}
+                {{ form.time_minute }}
+            </div>
+            <div>
+                <label for="id_duration">Duration:</label>
+                {{ form.duration }}
+            </div>
+            <button type="submit" class="button">Schedule</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
 </body>
 </html>

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Log Food Intake</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h1>Log Food Intake</h1>
+    {% if submitted %}
+        <h2>Do you want to log more food?</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="continue" value="yes">
+            <button type="submit" class="button">Yes</button>
+        </form>
+        <form method="post" action="{% url 'food_summary' %}">
+            {% csrf_token %}
+            <input type="hidden" name="continue" value="no">
+            <button type="submit" class="button">No</button>
+        </form>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_meal">Meal:</label>
+                <select name="meal" id="id_meal">
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_category">Category:</label>
+                <select name="category" id="id_category">
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_description">Description:</label>
+                <select name="description" id="id_description">
+                    {% for description in descriptions %}
+                    <option value="{{ description }}">{{ description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_weight">Weight (grams):</label>
+                <input type="number" name="weight" id="id_weight" min="0" value="0">
+            </div>
+            <div class="form-group">
+                <label for="id_date_year">Year:</label>
+                <select name="date_year" id="id_date_year">
+                    {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_date_month">Month:</label>
+                <select name="date_month" id="id_date_month">
+                    {% for month in months %}
+                    <option value="{{ month }}">{{ month }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_date_day">Day:</label>
+                <select name="date_day" id="id_date_day">
+                    {% for day in days %}
+                    <option value="{{ day }}">{{ day }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="button">Submit</button>
+        </form>
+    {% endif %}
+</body>
+</html>

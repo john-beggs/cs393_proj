@@ -12,20 +12,24 @@ class Command(BaseCommand):
         trainers_csv = os.path.join(base_dir, 'trainers.csv')
         food_csv = os.path.join(base_dir, 'cleaned_food.csv')
 
+        # Load trainers
         try:
             with open(trainers_csv, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    Trainer.objects.create(trainer_id=row['trainer_id'], name=row['name'])
+                    if not Trainer.objects.filter(trainer_id=row['trainer_id']).exists():
+                        Trainer.objects.create(trainer_id=row['trainer_id'], name=row['name'])
             self.stdout.write(self.style.SUCCESS('Trainers loaded successfully'))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'Error loading trainers: {e}'))
 
+        # Load food
         try:
             with open(food_csv, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     Food.objects.create(
+                        category=row['category'],
                         description=row['description'],
                         carbohydrate=row['carbohydrate'],
                         protein=row['protein'],
@@ -35,4 +39,3 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Food loaded successfully'))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'Error loading food: {e}'))
-

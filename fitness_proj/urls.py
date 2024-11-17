@@ -16,13 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from fitness_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
+    path('', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('register-member/', views.register_member, name='register_member'),
     path('schedule-training-session/', views.schedule_training_session, name='schedule_training_session'),
     path('update-goals/<int:member_id>/', views.update_goals, name='update_goals'),
     path('log-session/<int:session_id>/', views.log_session, name='log_session'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path("log-food-intake/", views.log_food_intake, name="log_food_intake"),
 ]
+
