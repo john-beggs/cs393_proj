@@ -1,8 +1,8 @@
 """
-URL configuration for school_proj project.
+URL configuration for fitness_proj project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
+    https://docs.djangoproject.com/en/4.2/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,9 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from fitness_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("school_app.urls"))
+    path('', views.index, name='index'),
+    path('register-member/', views.register_member, name='register_member'),
+    path('schedule-training-session/', views.schedule_training_session, name='schedule_training_session'),
+    path('update-goals/<int:member_id>/', views.update_goals, name='update_goals'),
+    path('log-session/<int:session_id>/', views.log_session, name='log_session'),
 ]

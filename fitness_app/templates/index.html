@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzz Fitness</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        p {
+            color: #34495e;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Fuzz Fitness</h1>
+    <p>Your journey to a healthier, stronger you starts here. Join us today and reach your fitness goals with the help of our expert trainers and personalized plans!</p>
+    
+    <div class="button-container">
+        <a href="{% url 'register_member' %}" class="button">Register a New Member</a>
+        <a href="{% url 'schedule_training_session' %}" class="button">Schedule a Training Session</a>
+        <a href="{% url 'update_goals' member_id=1 %}" class="button">Update Fitness Goals</a>
+        <a href="{% url 'log_session' session_id=1 %}" class="button">Log Training Session</a>
+    </div>
+    
+</body>
+</html>
+
+

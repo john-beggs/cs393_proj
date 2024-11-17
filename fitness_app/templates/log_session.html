@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Log Training Session</title>
+</head>
+<body>
+    <h1>Log Attendance and Progress for {{ session.member.name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Log Session</button>
+    </form>
+</body>
+</html>
