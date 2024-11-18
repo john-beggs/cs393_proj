@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome, Manager!</h1>
+    </header>
+    <main>
+        <h2>Dashboard Options</h2>
+        <div class="button-container">
+            <a href="{% url 'member_list' %}" class="button">View Member Info</a>
+            <a href="{% url 'member_report' %}" class="button">View Reports by Member</a>
+            <a href="{% url 'logout' %}" class="button logout-button">Logout</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

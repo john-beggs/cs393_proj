@@ -10,6 +10,12 @@ class Role(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def create_roles():
+        roles = ["Receptionist", "Trainer", "Member", "Manager"]
+        for role_name in roles:
+            Role.objects.get_or_create(name=role_name)
+
 class UserRole(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
@@ -17,27 +23,31 @@ class UserRole(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.role.name}"
 
+from django.db import models
+
 class Member(models.Model):
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=50)
     zipcode = models.CharField(max_length=10)
     date_of_birth = models.DateField()
     goal_description = models.TextField(default="No Goal Specified")
-    date_joined = models.DateField(auto_now_add=True)
     goal_date = models.DateField()
+    goal_weight = models.IntegerField(default=0)
+    date_joined = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
-
+        return f"{self.first_name} {self.last_name}"
 
 class Trainer(models.Model):
     trainer_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.name
+        return f"{self.first_name} {self.last_name}"
 
 class Food(models.Model):
     category = models.CharField(max_length=100)
@@ -88,7 +98,7 @@ class TrainingSession(models.Model):
     progress_notes = models.TextField(blank=True)
 
     def __str__(self):
-        return f"Session with {self.member.name} and {self.trainer.name} on {self.date}"
+        return f"Session with {self.member.first_name} {self.member.last_name} and {self.trainer.first_name} {self.trainer.last_name} on {self.date}"
     
 class FoodLog(models.Model):
     MEAL_CHOICES = [

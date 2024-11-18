@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Report</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>View Reports by Member</h1>
+    </header>
+    <main>
+        <!-- Search bar -->
+        <form method="get" action="{% url 'member_report' %}" class="form-container">
+            <input type="text" name="search" placeholder="Enter member name" value="{{ request.GET.search }}">
+            <button type="submit" class="button">Search</button>
+        </form>
+
+        <!-- Display report if member is found -->
+        {% if member %}
+        <h2>Member Information</h2>
+        <p><strong>Name:</strong> {{ member.first_name }} {{ member.last_name }}</p>
+        <p><strong>Address:</strong> {{ member.street_address }}, {{ member.city }}, {{ member.state }} {{ member.zipcode }}</p>
+        <p><strong>Date of Birth:</strong> {{ member.date_of_birth }}</p>
+        <p><strong>Goal Description:</strong> {{ member.goal_description }}</p>
+        <p><strong>Date Joined:</strong> {{ member.date_joined }}</p>
+        <p><strong>Goal Date:</strong> {{ member.goal_date }}</p>
+
+        <!-- Nutrition History -->
+        <h2>Nutrition History</h2>
+        {% if food_logs %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Meal</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Carbohydrates</th>
+                    <th>Protein</th>
+                    <th>Fat</th>
+                    <th>Calories</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in food_logs %}
+                <tr>
+                    <td>{{ log.date }}</td>
+                    <td>{{ log.meal }}</td>
+                    <td>{{ log.category }}</td>
+                    <td>{{ log.description }}</td>
+                    <td>{{ log.carbohydrate }}</td>
+                    <td>{{ log.protein }}</td>
+                    <td>{{ log.fat }}</td>
+                    <td>{{ log.kilocalories }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No nutrition history available for this member.</p>
+        {% endif %}
+
+        <!-- Session History -->
+        <h2>Training Session History</h2>
+        {% if training_sessions %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Trainer</th>
+                    <th>Space</th>
+                    <th>Duration</th>
+                    <th>Attendance</th>
+                    <th>Progress Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in training_sessions %}
+                <tr>
+                    <td>{{ session.date }}</td>
+                    <td>{{ session.time }}</td>
+                    <td>{{ session.trainer.first_name }} {{ session.trainer.last_name }}</td>
+                    <td>{{ session.space.name }}</td>
+                    <td>{{ session.duration }}</td>
+                    <td>{{ session.attendance|yesno:"Yes,No" }}</td>
+                    <td>{{ session.progress_notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No training session history available for this member.</p>
+        {% endif %}
+        {% else %}
+        <p>Enter a member name to view their report.</p>
+        {% endif %}
+
+        <div class="button-container">
+            <a href="{% url 'dashboard' %}" class="button">Back to Dashboard</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

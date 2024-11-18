@@ -28,6 +28,7 @@ urlpatterns = [
     path('update-goals/<int:member_id>/', views.update_goals, name='update_goals'),
     path('log-session/<int:session_id>/', views.log_session, name='log_session'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
-    path("log-food-intake/", views.log_food_intake, name="log_food_intake"),
+    path('log-food-intake/', views.log_food_intake, name='log_food_intake'),
+    path('member-list/', views.member_list, name='member_list'),
+    path('member-report/', views.member_report, name='member_report'),
 ]
-

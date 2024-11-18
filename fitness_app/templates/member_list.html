@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Information</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Member Information</h1>
+    </header>
+    <main>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Street Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Zip Code</th>
+                    <th>Date of Birth</th>
+                    <th>Goal Description</th>
+                    <th>Date Joined</th>
+                    <th>Goal Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td>{{ member.first_name }}</td>
+                    <td>{{ member.last_name }}</td>
+                    <td>{{ member.street_address }}</td>
+                    <td>{{ member.city }}</td>
+                    <td>{{ member.state }}</td>
+                    <td>{{ member.zipcode }}</td>
+                    <td>{{ member.date_of_birth }}</td>
+                    <td>{{ member.goal_description }}</td>
+                    <td>{{ member.date_joined }}</td>
+                    <td>{{ member.goal_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="button-container">
+            <a href="{% url 'dashboard' %}" class="button">Back to Dashboard</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

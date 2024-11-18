@@ -4,26 +4,73 @@ from .models import Member, Trainer, Space, TrainingSession, FoodLog, Food
 
 # RECEPTIONIST TASKS ?????
 
+from datetime import date
+
 class MemberRegistrationForm(forms.ModelForm):
-    YEAR_CHOICES = [(year, year) for year in range(1930, 2025)]
+    YEAR_CHOICES = [(year, year) for year in range(1930, date.today().year + 1)]
     MONTH_CHOICES = [(month, month) for month in range(1, 13)]
     DAY_CHOICES = [(day, day) for day in range(1, 32)]
 
     date_of_birth_year = forms.ChoiceField(choices=YEAR_CHOICES, label="Year of Birth")
     date_of_birth_month = forms.ChoiceField(choices=MONTH_CHOICES, label="Month of Birth")
     date_of_birth_day = forms.ChoiceField(choices=DAY_CHOICES, label="Day of Birth")
+    goal_date_year = forms.ChoiceField(choices=YEAR_CHOICES, label="Goal Year")
+    goal_date_month = forms.ChoiceField(choices=MONTH_CHOICES, label="Goal Month")
+    goal_date_day = forms.ChoiceField(choices=DAY_CHOICES, label="Goal Day")
+    goal_weight = forms.IntegerField(label="Goal Weight (lbs)", min_value=1)
 
     class Meta:
         model = Member
         fields = [
-            'name',
+            'first_name',
+            'last_name',
             'street_address',
             'city',
             'state',
             'zipcode',
             'goal_description',
-            'goal_date'
         ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        birth_year = int(cleaned_data.get('date_of_birth_year'))
+        birth_month = int(cleaned_data.get('date_of_birth_month'))
+        birth_day = int(cleaned_data.get('date_of_birth_day'))
+        date_of_birth = date(birth_year, birth_month, birth_day)
+
+        if date_of_birth >= date.today():
+            self.add_error('date_of_birth_year', "Date of birth must be in the past.")
+
+        goal_year = int(cleaned_data.get('goal_date_year'))
+        goal_month = int(cleaned_data.get('goal_date_month'))
+        goal_day = int(cleaned_data.get('goal_date_day'))
+        goal_date = date(goal_year, goal_month, goal_day)
+
+        if goal_date <= date.today():
+            self.add_error('goal_date_year', "Goal date must be in the future.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        member = super().save(commit=False)
+
+        birth_year = int(self.cleaned_data['date_of_birth_year'])
+        birth_month = int(self.cleaned_data['date_of_birth_month'])
+        birth_day = int(self.cleaned_data['date_of_birth_day'])
+        member.date_of_birth = date(birth_year, birth_month, birth_day)
+
+        goal_year = int(self.cleaned_data['goal_date_year'])
+        goal_month = int(self.cleaned_data['goal_date_month'])
+        goal_day = int(self.cleaned_data['goal_date_day'])
+        member.goal_date = date(goal_year, goal_month, goal_day)
+
+        member.goal_weight = self.cleaned_data['goal_weight']
+
+        if commit:
+            member.save()
+        return member
+
 
 
 class TrainingSessionForm(forms.ModelForm):
@@ -52,6 +99,20 @@ class TrainingSessionForm(forms.ModelForm):
         model = TrainingSession
         fields = ['member', 'trainer', 'space']
 
+    def save(self, commit=True):
+        session = super().save(commit=False)
+
+        session.date = date(
+            int(self.cleaned_data['date_year']),
+            int(self.cleaned_data['date_month']),
+            int(self.cleaned_data['date_day']),
+        )
+        session.time = f"{self.cleaned_data['time_hour']}:{self.cleaned_data['time_minute']}:00"
+
+        if commit:
+            session.save()
+        return session
+
 class LogSessionForm(forms.ModelForm):
     class Meta:
         model = TrainingSession
@@ -63,6 +124,12 @@ class UpdateGoalsForm(forms.ModelForm):
     class Meta:
         model = Member
         fields = ['goal_description', 'goal_date']
+
+    def clean_goal_date(self):
+        goal_date = self.cleaned_data.get('goal_date')
+        if goal_date <= date.today():
+            raise forms.ValidationError("Goal date must be in the future.")
+        return goal_date
 
 # ONLY PERSONAL TRAINERS
 

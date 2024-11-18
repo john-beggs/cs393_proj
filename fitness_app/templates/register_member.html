@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Member</title>
+    <title>Register a New Member</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
@@ -15,9 +15,14 @@
         <form method="post" class="form-container">
             {% csrf_token %}
             <div>
-                <label for="id_name">Name:</label>
-                {{ form.name }}
+                <label for="id_first_name">First Name:</label>
+                {{ form.first_name }}
             </div>
+            <div>
+                <label for="id_last_name">Last Name:</label>
+                {{ form.last_name }}
+            </div>
+            
             <div>
                 <label for="id_street_address">Street Address:</label>
                 {{ form.street_address }}
@@ -45,8 +50,14 @@
                 {{ form.goal_description }}
             </div>
             <div>
-                <label for="id_goal_date">Goal Date:</label>
-                {{ form.goal_date }}
+                <label>Goal Date:</label>
+                {{ form.goal_date_year }}
+                {{ form.goal_date_month }}
+                {{ form.goal_date_day }}
+            </div>
+            <div>
+                <label for="id_goal_weight">Goal Weight:</label>
+                {{ form.goal_weight }}
             </div>
             <button type="submit" class="button">Register</button>
         </form>
@@ -56,4 +67,3 @@
     </footer>
 </body>
 </html>
-

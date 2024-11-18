@@ -13,7 +13,7 @@
     </header>
     <main>
         <section>
-            <h2>Attendance and Progress for {{ session.member.name }}</h2>
+            <h2>Attendance and Progress for {{ session.member.first_name }} {{ session.member.last_name }}</h2>
             <form method="post" class="form-container">
                 {% csrf_token %}
                 {{ form.as_p }}

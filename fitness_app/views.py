@@ -7,9 +7,8 @@ from fitness_app.models import UserRole
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from datetime import date
+from django.db.models import Q
 
-# def index(request):
-#     return render(request, 'index.html')
 
 @login_required
 def dashboard(request):
@@ -24,18 +23,29 @@ def dashboard(request):
         return render(request, "trainer_dashboard.html")
     elif user_role == "Member":
         return render(request, "member_dashboard.html")
+    elif user_role == "Manager":
+        return render(request, "manager_dashboard.html")
 
     return render(request, "error.html", {"message": "No dashboard available for your role."})
 
+
 def register_member(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    user_role = UserRole.objects.get(user=request.user).role.name
+    if user_role not in ["Receptionist", "Manager"]:
+        return render(request, "error.html", {"message": "Access Denied"})
+
     if request.method == "POST":
         form = MemberRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('index')
+            return redirect("dashboard")
     else:
         form = MemberRegistrationForm()
-    return render(request, 'register_member.html', {'form': form})
+    return render(request, "register_member.html", {"form": form})
+
 
 def schedule_training_session(request):
     if request.method == "POST":
@@ -55,6 +65,7 @@ def schedule_training_session(request):
         form = TrainingSessionForm()
     return render(request, 'schedule_training_session.html', {'form': form})
 
+
 def update_goals(request, member_id):
     member = get_object_or_404(Member, id=member_id)
     if request.method == "POST":
@@ -66,6 +77,7 @@ def update_goals(request, member_id):
         form = UpdateGoalsForm(instance=member)
     return render(request, 'update_goals.html', {'form': form, 'member': member})
 
+
 def log_session(request, session_id):
     session = get_object_or_404(TrainingSession, id=session_id)
     if request.method == "POST":
@@ -75,10 +87,11 @@ def log_session(request, session_id):
             return redirect('index')
     else:
         form = LogSessionForm(instance=session)
-    return render(request, 'log_session.html', {'form': form, 'session': session})
+    return render(request, 'log_session.html', {
+        'form': form,
+        'session': session,
+    })
 
-
-# FOOOOOOD
 
 def log_food_intake(request):
     categories = Food.objects.values_list('category', flat=True).distinct()
@@ -121,7 +134,6 @@ def log_food_intake(request):
     })
 
 
-
 @login_required
 def food_summary(request):
     today = datetime.today()
@@ -146,4 +158,63 @@ def food_summary(request):
     return render(request, "food_summary.html", {
         "weekly_totals": weekly_totals,
         "monthly_totals": monthly_totals
+    })
+
+
+@login_required
+def manager_dashboard(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role == "Manager":
+        members = Member.objects.all()
+        return render(request, "manager_dashboard.html", {"members": members})
+
+    return render(request, "error.html", {"message": "You do not have access to this page."})
+
+
+@login_required
+def member_list(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role == "Manager":
+        members = Member.objects.all()
+        return render(request, "member_list.html", {"members": members})
+
+    return render(request, "error.html", {"message": "You do not have access to this page."})
+
+
+@login_required
+def member_report(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Manager":
+        return render(request, "error.html", {"message": "You do not have access to this page."})
+
+    member = None
+    food_logs = []
+    training_sessions = []
+
+    if request.method == "GET" and 'search' in request.GET:
+        search_query = request.GET.get('search', '').strip()
+        if search_query:
+            member = Member.objects.filter(
+                Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+            ).first()
+            if member:
+                food_logs = FoodLog.objects.filter(member=member.user)
+                training_sessions = TrainingSession.objects.filter(member=member)
+
+    return render(request, "member_report.html", {
+        "member": member,
+        "food_logs": food_logs,
+        "training_sessions": training_sessions,
     })
