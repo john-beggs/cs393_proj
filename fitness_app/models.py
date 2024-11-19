@@ -23,8 +23,6 @@ class UserRole(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.role.name}"
 
-from django.db import models
-
 class Member(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -100,6 +98,9 @@ class TrainingSession(models.Model):
     def __str__(self):
         return f"Session with {self.member.first_name} {self.member.last_name} and {self.trainer.first_name} {self.trainer.last_name} on {self.date}"
     
+from django.db import models
+from django.contrib.auth.models import User
+
 class FoodLog(models.Model):
     MEAL_CHOICES = [
         ("breakfast", "Breakfast"),
@@ -113,6 +114,7 @@ class FoodLog(models.Model):
     meal = models.CharField(max_length=10, choices=MEAL_CHOICES)
     category = models.CharField(max_length=100)
     description = models.CharField(max_length=255)
+    servings = models.FloatField(default=1)
     carbohydrate = models.FloatField()
     protein = models.FloatField()
     fat = models.FloatField()
@@ -120,4 +122,3 @@ class FoodLog(models.Model):
 
     def __str__(self):
         return f"{self.member.username} - {self.date} - {self.meal}"
-

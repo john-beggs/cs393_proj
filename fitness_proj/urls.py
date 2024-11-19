@@ -29,6 +29,8 @@ urlpatterns = [
     path('log-session/<int:session_id>/', views.log_session, name='log_session'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('log-food-intake/', views.log_food_intake, name='log_food_intake'),
+    path('food-summary/', views.food_summary, name='food_summary'),
+    path('get-descriptions/', views.get_descriptions, name='get_descriptions'),
     path('member-list/', views.member_list, name='member_list'),
     path('member-report/', views.member_report, name='member_report'),
 ]
