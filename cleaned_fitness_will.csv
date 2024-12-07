@@ -1,4 +1,4 @@
-,Exercise,Calories Burn,Dream Weight,Actual Weight,Age,Gender,Duration,Heart Rate,BMI,Weather Conditions,Exercise Intensity
+ID,Exercise,Calories Burn,Dream Weight,Actual Weight,Age,Gender,Duration,Heart Rate,BMI,Weather Conditions,Exercise Intensity
 0,exercise 2,286.9598505,91.89253067,96.30111546,45,Male,37.0,170,29.42627467,Rainy,5
 1,exercise 7,343.4530361,64.16509681,61.1046681,25,Male,43.0,142,21.28634599,Rainy,5
 2,exercise 4,261.2234649,70.84622352,71.76672384,20,Male,20.0,148,27.8995916,Cloudy,4
