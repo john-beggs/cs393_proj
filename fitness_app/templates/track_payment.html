@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Payments</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Track Payments</h1>
+    </header>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Member Name</th>
+                    <th>Amount Due</th>
+                    <th>Due Date</th>
+                    <th>Payment Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                    {% for payment in member.payments.all %}
+                        <tr>
+                            <td>{{ member.first_name }} {{ member.last_name }}</td>
+                            <td>${{ payment.amount_due }}</td>
+                            <td>{{ payment.due_date }}</td>
+                            <td>
+                                {% if payment.is_paid %}
+                                    Paid
+                                {% else %}
+                                    Unpaid
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not payment.is_paid %}
+                                    <a href="{% url 'update_payment' payment.id %}" class="button">Mark as Paid</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

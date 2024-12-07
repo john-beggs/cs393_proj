@@ -1,5 +1,5 @@
 from django import forms
-from .models import Member, Trainer, Space, TrainingSession, FoodLog, Food
+from .models import Member, Trainer, Space, TrainingSession, FoodLog, Food, Fine, Payment
 
 
 # RECEPTIONIST TASKS ?????
@@ -117,6 +117,17 @@ class LogSessionForm(forms.ModelForm):
     class Meta:
         model = TrainingSession
         fields = ['attendance', 'progress_notes']
+
+
+class FineForm(forms.ModelForm):
+    class Meta:
+        model = Fine
+        fields = ['amount']
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['amount_due', 'due_date', 'payment_date', 'is_paid']
 
 # MEMBERS AND PERSONAL TRAINERS
 

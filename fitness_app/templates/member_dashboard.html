@@ -19,6 +19,7 @@
                 <a href="{% url 'log_food_intake' %}" class="button">Log Food Intake</a>
                 <a href="#" class="button disabled">View Workout History</a>
                 <a href="#" class="button disabled">Track Progress</a>
+                <a href="{% url 'view_fines' member_id=user.id %}" class="button">View Payments and Fines</a>
                 <a href="{% url 'logout' %}" class="button logout-button">Logout</a>
             </div>
         </section>

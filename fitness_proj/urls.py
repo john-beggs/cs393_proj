@@ -23,6 +23,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/receptionist/', views.dashboard, name='receptionist_dashboard'),
+    path('dashboard/manager/', views.dashboard, name='manager_dashboard'),
+    path('dashboard/trainer/', views.dashboard, name='trainer_dashboard'),
+    path('dashboard/member/', views.dashboard, name='member_dashboard'),
     path('register-member/', views.register_member, name='register_member'),
     path('schedule-training-session/', views.schedule_training_session, name='schedule_training_session'),
     path('update-goals/<int:member_id>/', views.update_goals, name='update_goals'),
@@ -33,4 +37,8 @@ urlpatterns = [
     path('get-descriptions/', views.get_descriptions, name='get_descriptions'),
     path('member-list/', views.member_list, name='member_list'),
     path('member-report/', views.member_report, name='member_report'),
+    path('track-payment/', views.track_payment, name='track_payment'),
+    path('update-payment/<int:payment_id>/', views.update_payment, name='update_payment'),
+    path('view-fines/<int:member_id>/', views.view_fines, name='view_fines'),
 ]
+

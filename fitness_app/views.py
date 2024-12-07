@@ -3,7 +3,7 @@ from .forms import MemberRegistrationForm, TrainingSessionForm, UpdateGoalsForm,
 from .models import Member, TrainingSession, Trainer, FoodLog, Food
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from fitness_app.models import UserRole
+from fitness_app.models import UserRole, Member, Payment, Fine
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from datetime import date
@@ -256,4 +256,56 @@ def member_report(request):
         "training_sessions": training_sessions,
     })
 
+# EVERYTHING HAVING TO DO WITH PAYMENT AND FINES
 
+@login_required
+def track_payment(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    if user_role not in ["Receptionist", "Manager"]:
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    members = Member.objects.prefetch_related("payments").all()
+    return render(request, "track_payment.html", {"members": members})
+
+
+@login_required
+def update_payment(request, payment_id):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    if user_role != "Receptionist":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    payment = get_object_or_404(Payment, id=payment_id)
+    if request.method == "POST":
+        payment.payment_date = date.today()
+        payment.is_paid = True
+        payment.save()
+        return redirect("track_payment")
+
+    return render(request, "update_payment.html", {"payment": payment})
+
+
+@login_required
+def view_fines(request, member_id):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    if user_role not in ["Receptionist", "Manager", "Member"]:
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    member = get_object_or_404(Member, id=member_id)
+    fines = Payment.objects.filter(member=member, fine__isnull=False)
+
+    if not fines.exists():
+        return render(request, "view_fines.html", {"member": member, "fines": None, "message": "No fines to display."})
+
+    return render(request, "view_fines.html", {"member": member, "fines": fines})
