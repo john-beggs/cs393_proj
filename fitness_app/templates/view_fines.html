@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Fines</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Fines for {{ member.first_name }} {{ member.last_name }}</h1>
+    </header>
+    <main>
+        {% if fines %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fine ID</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fine in fines %}
+                        <tr>
+                            <td>{{ fine.id }}</td>
+                            <td>${{ fine.fine.amount }}</td>
+                            <td>{{ fine.fine.issued_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>{{ message }}</p>
+        {% endif %}
+        <a href="{% url 'track_payment' %}" class="button">Back to Payments</a>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
+

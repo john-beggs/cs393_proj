@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date, timedelta
 
 # Create your models here.
 
@@ -122,3 +123,37 @@ class FoodLog(models.Model):
 
     def __str__(self):
         return f"{self.member.username} - {self.date} - {self.meal}"
+
+
+class Payment(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="payments")
+    amount_due = models.DecimalField(max_digits=10, decimal_places=2)
+    due_date = models.DateField()
+    payment_date = models.DateField(null=True, blank=True)
+    is_paid = models.BooleanField(default=False)
+    fine_amount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
+    def is_overdue(self):
+        return not self.is_paid and self.due_date < date.today()
+
+    def calculate_fine(self):
+        if self.is_overdue():
+            overdue_days = (date.today() - self.due_date).days
+            return round(overdue_days * 20, 2)
+        return 0.00
+
+    def save(self, *args, **kwargs):
+        if self.is_overdue():
+            self.fine_amount = self.calculate_fine()
+        else:
+            self.fine_amount = 0.00
+        super().save(*args, **kwargs)
+
+
+class Fine(models.Model):
+    payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name="fine")
+    amount = models.DecimalField(max_digits=6, decimal_places=2)
+    issued_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Fine for Payment {self.payment.id}: ${self.amount}"

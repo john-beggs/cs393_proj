@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Payment</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Fuzz Fitness</h1>
+    </header>
+    <main>
+        <h2>Update Payment</h2>
+        <p>Member: {{ payment.member.first_name }} {{ payment.member.last_name }}</p>
+        <p>Amount Due: ${{ payment.amount_due }}</p>
+        <p>Due Date: {{ payment.due_date }}</p>
+        <p>Status: {% if payment.is_paid %}Paid{% else %}Unpaid{% endif %}</p>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit">Mark as Paid</button>
+        </form>
+        <a href="{% url 'track_payment' %}">Back to Payments</a>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness</p>
+    </footer>
+</body>
+</html>
