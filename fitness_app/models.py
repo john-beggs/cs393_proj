@@ -55,6 +55,12 @@ class Food(models.Model):
     protein = models.FloatField()
     fat_total_lipid = models.FloatField()
     kilocalories = models.FloatField()
+    serv_grams = models.FloatField()
+    serv_desc = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.description
+
 
 
 class Space(models.Model):

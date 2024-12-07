@@ -1,4 +1,4 @@
-,category,description,carbohydrate,protein,fat_total_lipid,kilocalories,serv_grams,serv_desc
+ID,category,description,carbohydrate,protein,fat_total_lipid,kilocalories,serv_grams,serv_desc
 0,LENTILS,"SPROUTED,RAW",22.14,8.96,0.55,106,77.0,1 cup
 1,POTATO CHIPS,"WO/SALT,RED FAT",67.8,7.1,20.8,487,28.35,1 oz
 2,TURKEY,"FRYER-ROASTERS,BREAST,MEAT ONLY,CKD,RSTD",0.0,30.06,0.74,135,87.0,"1 unit,  (yield from 1 lb ready-to-cook turkey)"
