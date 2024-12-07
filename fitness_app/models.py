@@ -87,17 +87,14 @@ class Space(models.Model):
         return self.name
 
 class TrainingSession(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
     trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE)
     space = models.ForeignKey(Space, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
     duration = models.DurationField()
-    attendance = models.BooleanField(default=False)
-    progress_notes = models.TextField(blank=True)
 
     def __str__(self):
-        return f"Session with {self.member.first_name} {self.member.last_name} and {self.trainer.first_name} {self.trainer.last_name} on {self.date}"
+        return f"Session in {self.space.name} with {self.trainer.first_name} {self.trainer.last_name} on {self.date}"
     
 from django.db import models
 from django.contrib.auth.models import User
