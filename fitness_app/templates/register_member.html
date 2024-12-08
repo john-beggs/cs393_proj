@@ -12,6 +12,7 @@
         <h1>Register a New Member</h1>
     </header>
     <main>
+        <a href="{% url 'receptionist_dashboard' %}" class="button back-button">Back to Dashboard</a>
         <form method="post" class="form-container">
             {% csrf_token %}
             <div>
@@ -62,8 +63,6 @@
             <button type="submit" class="button">Register</button>
         </form>
     </main>
-    <footer>
-        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
-    </footer>
 </body>
 </html>
+

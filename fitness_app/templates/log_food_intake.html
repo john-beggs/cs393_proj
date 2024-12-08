@@ -13,7 +13,6 @@
             categoryDropdown.change(function () {
                 const selectedCategory = categoryDropdown.val();
 
-                // Fetch updated descriptions based on the selected category
                 if (selectedCategory) {
                     $.ajax({
                         url: `/get-descriptions/`,
@@ -31,7 +30,6 @@
                 }
             });
 
-            // Fetch serving details dynamically
             descriptionDropdown.change(function () {
                 const selectedCategory = categoryDropdown.val();
                 const selectedDescription = descriptionDropdown.val();
@@ -141,6 +139,7 @@
             </div>
             <button type="submit" class="button">Submit</button>
         </form>
+        <a href="{% url 'member_dashboard' %}" class="button back-button">Back to Dashboard</a>
     {% endif %}
 </body>
 </html>

@@ -6,7 +6,7 @@ from django.db.models import Q, F  # Import Q and F
 
 
 class MemberRegistrationForm(forms.ModelForm):
-    YEAR_CHOICES = [(year, year) for year in range(1930, date.today().year + 1)]
+    YEAR_CHOICES = [(year, year) for year in range(1930, date.today().year + 5)]
     MONTH_CHOICES = [(month, month) for month in range(1, 13)]
     DAY_CHOICES = [(day, day) for day in range(1, 32)]
 

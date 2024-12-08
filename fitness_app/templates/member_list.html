@@ -12,6 +12,12 @@
         <h1>Member Information</h1>
     </header>
     <main>
+        <!-- Search bar -->
+        <form method="get" action="{% url 'member_list' %}" class="form-container">
+            <input type="text" name="search" placeholder="Search by name" value="{{ search_query }}">
+            <button type="submit" class="button">Search</button>
+        </form>
+
         <table border="1">
             <thead>
                 <tr>
@@ -41,6 +47,10 @@
                     <td>{{ member.date_joined }}</td>
                     <td>{{ member.goal_date }}</td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10">No members found matching the search criteria.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -48,8 +58,5 @@
             <a href="{% url 'dashboard' %}" class="button">Back to Dashboard</a>
         </div>
     </main>
-    <footer>
-        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
-    </footer>
 </body>
 </html>

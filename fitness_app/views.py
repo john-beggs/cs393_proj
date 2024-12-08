@@ -3,7 +3,7 @@ from .forms import MemberRegistrationForm, TrainingSessionForm, UpdateGoalsForm,
 from .models import Member, TrainingSession, Trainer, FoodLog, Food, MemberJoinsSession, Space
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from fitness_app.models import UserRole, Member, Payment, Fine
+from fitness_app.models import UserRole, Member, Payment, Fine, User
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from datetime import date, time
@@ -149,7 +149,7 @@ def edit_my_info(request):
 def log_food_intake(request):
     categories = Food.objects.values_list('category', flat=True).distinct()
     current_year = date.today().year
-    years = range(current_year - 10, current_year + 1)
+    years = range(current_year - 10, current_year + 5)
     months = range(1, 13)
     days = range(1, 32)
 
@@ -282,10 +282,21 @@ def member_list(request):
         return redirect("login")
 
     if user_role == "Manager":
+        search_query = request.GET.get('search', '').strip()
         members = Member.objects.all()
-        return render(request, "member_list.html", {"members": members})
+
+        if search_query:
+            members = members.filter(
+                Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+            )
+
+        return render(request, "member_list.html", {
+            "members": members,
+            "search_query": search_query,
+        })
 
     return render(request, "error.html", {"message": "You do not have access to this page."})
+
 
 
 @login_required
@@ -315,14 +326,17 @@ def member_report(request):
                 member = Member.objects.filter(Q(first_name__icontains=first_name) | Q(last_name__icontains=first_name)).first()
 
             if member:
-                food_logs = FoodLog.objects.filter(member__username=f"{member.first_name.lower()}.{member.last_name.lower()}")
-                training_sessions = TrainingSession.objects.filter(member=member)
+                user = User.objects.filter(first_name=member.first_name, last_name=member.last_name).first()
+                if user:
+                    food_logs = FoodLog.objects.filter(member=user)
+                training_sessions = MemberJoinsSession.objects.filter(member=member)
 
     return render(request, "member_report.html", {
         "member": member,
         "food_logs": food_logs,
         "training_sessions": training_sessions,
     })
+
 
 # EVERYTHING HAVING TO DO WITH PAYMENT AND FINES
 
@@ -366,7 +380,7 @@ def update_payment(request, payment_id):
     except UserRole.DoesNotExist:
         return render(request, "error.html", {"message": "Access Denied"})
 
-    if user_role != "Receptionist":
+    if user_role not in ["Receptionist", "Manager"]:
         return render(request, "error.html", {"message": "Access Denied"})
 
     payment = get_object_or_404(Payment, id=payment_id)

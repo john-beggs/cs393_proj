@@ -12,14 +12,12 @@
         <h1>Track Payments</h1>
     </header>
     <main>
-        <!-- Search Form -->
         <form method="get" class="search-form">
             <label for="search_member">Search for a Member:</label>
             <input type="text" name="search" id="search_member" placeholder="Enter Member Name" value="{{ request.GET.search }}">
             <button type="submit" class="button">Search</button>
         </form>
-
-        <!-- Payment Table -->
+        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
         <table>
             <thead>
                 <tr>
@@ -60,13 +58,7 @@
                 {% endif %}
             </tbody>
         </table>
-
-        <!-- Back to Dashboard Button -->
-        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
     </main>
-    <footer>
-        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
-    </footer>
 </body>
 </html>
 
