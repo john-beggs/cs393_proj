@@ -224,6 +224,3 @@ class FoodLogForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['category'].choices = [(food['category'], food['category']) for food in Food.objects.values('category').distinct()]
         self.fields['description'].choices = []
-
-
-

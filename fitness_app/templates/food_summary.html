@@ -1,34 +1,56 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Food Summary</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <h1>Food Summary</h1>
-    {% if error_message %}
-        <p>{{ error_message }}</p>
-    {% else %}
-        <h2>Weekly Summary</h2>
-        <ul>
-            <li>Carbohydrates: {{ weekly_totals.carbohydrate }} g</li>
-            <li>Protein: {{ weekly_totals.protein }} g</li>
-            <li>Fat: {{ weekly_totals.fat }} g</li>
-            <li>Kilocalories: {{ weekly_totals.kilocalories }}</li>
-        </ul>
-        <h2>Monthly Summary</h2>
-        <ul>
-            <li>Carbohydrates: {{ monthly_totals.carbohydrate }} g</li>
-            <li>Protein: {{ monthly_totals.protein }} g</li>
-            <li>Fat: {{ monthly_totals.fat }} g</li>
-            <li>Kilocalories: {{ monthly_totals.kilocalories }}</li>
-        </ul>
+    <header>
+        <h1>Food Summary</h1>
+    </header>
+    <main>
+        {% if error_message %}
+            <div class="error-message">
+                <p>{{ error_message }}</p>
+            </div>
+        {% else %}
+            <section>
+                <h2>Weekly Summary</h2>
+                <ul class="summary-list">
+                    <li>Carbohydrates: {{ weekly_totals.carbohydrate }} g</li>
+                    <li>Protein: {{ weekly_totals.protein }} g</li>
+                    <li>Fat: {{ weekly_totals.fat }} g</li>
+                    <li>Kilocalories: {{ weekly_totals.kilocalories }}</li>
+                </ul>
+            </section>
 
-        <h2>Weekly Logs</h2>
-        <ul>
-            {% for log in week_logs %}
-                <li>{{ log.date }} - {{ log.description }}: {{ log.kilocalories }} kcal</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+            <section>
+                <h2>Monthly Summary</h2>
+                <ul class="summary-list">
+                    <li>Carbohydrates: {{ monthly_totals.carbohydrate }} g</li>
+                    <li>Protein: {{ monthly_totals.protein }} g</li>
+                    <li>Fat: {{ monthly_totals.fat }} g</li>
+                    <li>Kilocalories: {{ monthly_totals.kilocalories }}</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Weekly Logs</h2>
+                <ul class="logs-list">
+                    {% for log in week_logs %}
+                        <li>{{ log.date }} - {{ log.description }}: {{ log.kilocalories }} kcal</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </main>
+    <footer>
+        <div class="button-container">
+            <a href="{% url 'member_dashboard' %}" class="button">Return to Dashboard</a>
+            <a href="{% url 'log_food_intake' %}" class="button">Log Another Item</a>
+        </div>
+    </footer>
 </body>
 </html>
+

@@ -246,8 +246,27 @@ def track_payment(request):
     if user_role not in ["Receptionist", "Manager"]:
         return render(request, "error.html", {"message": "Access Denied"})
 
-    members = Member.objects.prefetch_related("payments").all()
+    search_query = request.GET.get('search', '').strip()
+
+    if search_query:
+        name_parts = search_query.split(" ", 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+        if last_name:
+            members = Member.objects.filter(
+                first_name__icontains=first_name, 
+                last_name__icontains=last_name
+            ).prefetch_related("payments")
+        else:
+            members = Member.objects.filter(
+                Q(first_name__icontains=first_name) | Q(last_name__icontains=first_name)
+            ).prefetch_related("payments")
+    else:
+        members = Member.objects.prefetch_related("payments").all()
+
     return render(request, "track_payment.html", {"members": members})
+
 
 
 @login_required
