@@ -69,11 +69,15 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f'Error loading spaces: {e}'))
 
 
+<<<<<<< Updated upstream
         trainers_csv = os.path.join(base_dir, 'trainers_famous_actors.csv')
         food_csv = os.path.join(base_dir, 'cleaned_food_will.csv')
         members_csv = os.path.join(base_dir, 'members_data.csv')
 
         # Load trainers
+=======
+        # Load sessions
+>>>>>>> Stashed changes
         try:
             with open(trainers_csv, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -94,6 +98,7 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     try:
+<<<<<<< Updated upstream
                         Food.objects.create(
                             category=row['category'],
                             description=row['description'],
@@ -128,6 +133,14 @@ class Command(BaseCommand):
                             goal_date=row['goal_date'],
                             goal_weight=row['goal_weight'],
                             date_joined=row['date_joined'],
+=======
+                        TrainingSession.objects.create(
+                            trainer=row['trainer_id'],
+                            space=row['room_id'],
+                            date=row['date'],
+                            time=row['time'],
+                            duration=row['duration'],
+>>>>>>> Stashed changes
                         )
                     except Exception as member_error:
                         self.stderr.write(self.style.ERROR(f'Error processing member: {row}. {member_error}'))
