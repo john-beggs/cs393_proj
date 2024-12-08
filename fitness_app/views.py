@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from django.http import JsonResponse
 from datetime import date, time
 from django.db.models import Q
+from django.http import JsonResponse
 
 
 @login_required
@@ -206,6 +207,21 @@ def log_food_intake(request):
         'months': months,
         'days': days,
     })
+
+def get_food_details(request):
+    if request.method == "GET" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        category = request.GET.get('category')
+        description = request.GET.get('description')
+
+        food_item = Food.objects.filter(category=category, description=description).first()
+        if food_item:
+            return JsonResponse({
+                'serv_desc': food_item.serv_desc,
+                'serv_grams': food_item.serv_grams,
+            })
+        else:
+            return JsonResponse({'error': 'Food item not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 

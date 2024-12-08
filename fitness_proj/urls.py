@@ -49,4 +49,5 @@ urlpatterns = [
     path("search-member/", views.search_member, name="search_member"),
     path("edit-member/<int:member_id>/", views.edit_member, name="edit_member"),
     path("edit-my-info/", views.edit_my_info, name="edit_my_info"),
+    path('get-food-details/', views.get_food_details, name='get_food_details')
 ]

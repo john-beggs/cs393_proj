@@ -4,26 +4,60 @@
 <head>
     <title>Log Food Intake</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const categoryDropdown = document.getElementById("id_category");
-            const descriptionDropdown = document.getElementById("id_description");
+        $(document).ready(function () {
+            const categoryDropdown = $("#id_category");
+            const descriptionDropdown = $("#id_description");
 
-            categoryDropdown.addEventListener("change", function () {
-                const selectedCategory = categoryDropdown.value;
+            categoryDropdown.change(function () {
+                const selectedCategory = categoryDropdown.val();
 
-                fetch(`/get-descriptions/?category=${encodeURIComponent(selectedCategory)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        descriptionDropdown.innerHTML = '<option value="" disabled selected>Select a description</option>';
-                        data.descriptions.forEach(description => {
-                            const option = document.createElement("option");
-                            option.value = description;
-                            option.textContent = description;
-                            descriptionDropdown.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error("Error fetching descriptions:", error));
+                // Fetch updated descriptions based on the selected category
+                if (selectedCategory) {
+                    $.ajax({
+                        url: `/get-descriptions/`,
+                        data: { category: selectedCategory },
+                        success: function (data) {
+                            descriptionDropdown.html('<option value="" disabled selected>Select a description</option>');
+                            data.descriptions.forEach(description => {
+                                descriptionDropdown.append(new Option(description, description));
+                            });
+                        },
+                        error: function () {
+                            console.error("Error fetching descriptions.");
+                        }
+                    });
+                }
+            });
+
+            // Fetch serving details dynamically
+            descriptionDropdown.change(function () {
+                const selectedCategory = categoryDropdown.val();
+                const selectedDescription = descriptionDropdown.val();
+
+                if (selectedCategory && selectedDescription) {
+                    $.ajax({
+                        url: `/get-food-details/`,
+                        data: {
+                            category: selectedCategory,
+                            description: selectedDescription
+                        },
+                        success: function (data) {
+                            if (data.serv_desc && data.serv_grams) {
+                                $("#serv-desc").text(data.serv_desc);
+                                $("#serv-grams").text(data.serv_grams + " grams");
+                            } else {
+                                $("#serv-desc").text("N/A");
+                                $("#serv-grams").text("N/A");
+                            }
+                        },
+                        error: function () {
+                            $("#serv-desc").text("N/A");
+                            $("#serv-grams").text("N/A");
+                        }
+                    });
+                }
             });
         });
     </script>
@@ -59,7 +93,7 @@
                 <select name="category" id="id_category" required>
                     <option value="" disabled selected>Select a category</option>
                     {% for category in categories %}
-                    <option value="{{ category }}">{{ category }}</option>
+                        <option value="{{ category }}">{{ category }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -70,6 +104,14 @@
                 </select>
             </div>
             <div class="form-group">
+                <label>Serving Description:</label>
+                <span id="serv-desc">N/A</span>
+            </div>
+            <div class="form-group">
+                <label>Serving Grams:</label>
+                <span id="serv-grams">N/A</span>
+            </div>
+            <div class="form-group">
                 <label for="id_servings">Servings:</label>
                 <input type="number" name="servings" id="id_servings" min="0.1" step="0.1" value="1" required>
             </div>
@@ -77,7 +119,7 @@
                 <label for="id_date_year">Year:</label>
                 <select name="date_year" id="id_date_year">
                     {% for year in years %}
-                    <option value="{{ year }}">{{ year }}</option>
+                        <option value="{{ year }}">{{ year }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -85,7 +127,7 @@
                 <label for="id_date_month">Month:</label>
                 <select name="date_month" id="id_date_month">
                     {% for month in months %}
-                    <option value="{{ month }}">{{ month }}</option>
+                        <option value="{{ month }}">{{ month }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -93,7 +135,7 @@
                 <label for="id_date_day">Day:</label>
                 <select name="date_day" id="id_date_day">
                     {% for day in days %}
-                    <option value="{{ day }}">{{ day }}</option>
+                        <option value="{{ day }}">{{ day }}</option>
                     {% endfor %}
                 </select>
             </div>
