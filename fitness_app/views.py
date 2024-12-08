@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .forms import MemberRegistrationForm, TrainingSessionForm, UpdateGoalsForm, FoodLogForm
-from .models import Member, TrainingSession, Trainer, FoodLog, Food
+from .models import Member, TrainingSession, Trainer, FoodLog, Food, MemberJoinsSession, Space
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from fitness_app.models import UserRole, Member, Payment, Fine
@@ -28,6 +28,7 @@ def dashboard(request):
 
     return render(request, "error.html", {"message": "No dashboard available for your role."})
 
+##### RECEPTIONIST STUFF
 
 def register_member(request):
     if not request.user.is_authenticated:
@@ -45,6 +46,51 @@ def register_member(request):
     else:
         form = MemberRegistrationForm()
     return render(request, "register_member.html", {"form": form})
+
+@login_required
+def search_member(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Receptionist":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    members = None
+    if request.method == "GET":
+        first_name = request.GET.get("first_name", "").strip()
+        last_name = request.GET.get("last_name", "").strip()
+
+        members = Member.objects.all()
+        if first_name:
+            members = members.filter(first_name__icontains=first_name)
+        if last_name:
+            members = members.filter(last_name__icontains=last_name)
+
+    return render(request, "search_member.html", {"members": members})
+
+@login_required
+def edit_member(request, member_id):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Receptionist":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    member = get_object_or_404(Member, id=member_id)
+
+    if request.method == "POST":
+        form = MemberRegistrationForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect("search_member")
+    else:
+        form = MemberRegistrationForm(instance=member)
+
+    return render(request, "edit_member.html", {"form": form, "member": member})
 
 
 def schedule_training_session(request):
@@ -69,6 +115,30 @@ def update_goals(request, member_id):
     else:
         form = UpdateGoalsForm(instance=member)
     return render(request, 'update_goals.html', {'form': form, 'member': member})
+
+###### MEMBERS GO CRAZY
+
+@login_required
+def edit_my_info(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Member":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    member = get_object_or_404(Member, first_name=request.user.first_name, last_name=request.user.last_name)
+
+    if request.method == "POST":
+        form = MemberRegistrationForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            return redirect("member_dashboard")
+    else:
+        form = MemberRegistrationForm(instance=member)
+
+    return render(request, "edit_my_info.html", {"form": form, "member": member})
 
 
 def log_food_intake(request):
@@ -306,3 +376,141 @@ def view_fines(request, member_id):
         return render(request, "view_fines.html", {"member": member, "fines": None, "message": "No fines to display."})
 
     return render(request, "view_fines.html", {"member": member, "fines": fines})
+
+# USERS INTERACTING WITH A SESSION
+
+@login_required
+def available_dates(request):
+    selected_duration = request.GET.get('duration', '')
+    selected_space = request.GET.get('space', '')
+
+    session_filter = Q()
+    if selected_duration:
+        session_filter &= Q(duration=selected_duration)
+    if selected_space:
+        session_filter &= Q(space__name=selected_space)
+
+    filtered_sessions = TrainingSession.objects.filter(session_filter).distinct()
+
+    dates = filtered_sessions.values_list('date', flat=True).distinct()
+
+    durations = TrainingSession.objects.values_list('duration', flat=True).distinct()
+    spaces = Space.objects.values_list('name', flat=True).distinct()
+
+    context = {
+        'dates': sorted(set(dates)),
+        'durations': sorted(set(durations)),
+        'spaces': sorted(set(spaces)),
+    }
+    return render(request, 'available_dates.html', context)
+
+
+@login_required
+def sessions_by_date(request, selected_date):
+    selected_duration = request.GET.get('duration', '')
+    selected_space = request.GET.get('space', '')
+
+    session_filter = Q(date=selected_date)
+    if selected_duration:
+        session_filter &= Q(duration=selected_duration)
+    if selected_space:
+        session_filter &= Q(space__name=selected_space)
+
+    sessions = TrainingSession.objects.filter(session_filter)
+
+    context = {
+        'selected_date': selected_date,
+        'sessions': sessions,
+    }
+    return render(request, 'sessions_by_date.html', context)
+
+
+@login_required
+def join_session(request, session_id):
+    session = get_object_or_404(TrainingSession, id=session_id)
+    member = Member.objects.get(id=request.user.id)
+
+    if MemberJoinsSession.objects.filter(member=member, session=session).exists():
+        return render(request, "error.html", {"message": "You have already joined this session."})
+
+    MemberJoinsSession.objects.create(member=member, session=session)
+    return redirect("joined_sessions")
+
+@login_required
+def joined_sessions(request):
+    member = Member.objects.get(id=request.user.id)
+    joined_sessions = MemberJoinsSession.objects.filter(member=member)
+    return render(request, "joined_sessions.html", {"joined_sessions": joined_sessions})
+
+
+#### TRAINER INTERACTING WITH A SESSION
+
+@login_required
+def trainer_dashboard(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Trainer":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    return render(request, "trainer_dashboard.html")
+
+@login_required
+def mark_attendance(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Trainer":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    sessions = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+
+    if request.method == "POST":
+        session_id = request.POST.get("session_id")
+        member_ids = request.POST.getlist("attendance")
+        
+        for member_id in member_ids:
+            MemberJoinsSession.objects.filter(
+                training_session_id=session_id, member_id=member_id
+            ).update(attended=True)
+
+        return redirect("mark_attendance")
+
+    return render(request, "mark_attendance.html", {"sessions": sessions})
+
+@login_required
+def view_all_classes(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Trainer":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    classes = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+
+    return render(request, "view_all_classes.html", {"classes": classes})
+
+@login_required
+def delete_class(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+    except UserRole.DoesNotExist:
+        return redirect("login")
+
+    if user_role != "Trainer":
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    classes = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+
+    if request.method == "POST":
+        session_id = request.POST.get("session_id")
+        TrainingSession.objects.filter(id=session_id).delete()
+        return redirect("delete_class")
+
+    return render(request, "delete_class.html", {"classes": classes})

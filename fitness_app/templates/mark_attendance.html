@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Mark Attendance</h1>
+    </header>
+    <main>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="session_id">Select a Session:</label>
+            <select name="session_id" id="session_id" required>
+                {% for session in sessions %}
+                    <option value="{{ session.id }}">
+                        {{ session.date }} | {{ session.time }} | {{ session.space.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <div id="members-container">
+                {% for session in sessions %}
+                <div class="members-for-session" id="members-{{ session.id }}">
+                    <h2>Members for Session: {{ session.date }}</h2>
+                    <ul>
+                        {% for join in session.memberjoinssession_set.all %}
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="attendance" value="{{ join.member.id }}">
+                                    {{ join.member.first_name }} {{ join.member.last_name }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="button">Submit Attendance</button>
+        </form>
+        <a href="{% url 'trainer_dashboard' %}" class="button">Back to Dashboard</a>
+    </main>
+</body>
+</html>

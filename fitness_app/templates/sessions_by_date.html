@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sessions on {{ selected_date }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Available Sessions on {{ selected_date }}</h1>
+    </header>
+    <main>
+        {% if sessions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trainer</th>
+                        <th>Room</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                        <tr>
+                            <td>{{ session.trainer.first_name }} {{ session.trainer.last_name }}</td>
+                            <td>{{ session.space.name }}</td>
+                            <td>{{ session.time }}</td>
+                            <td>{{ session.duration }} minutes</td>
+                            <td>
+                                <a href="{% url 'join_session' session.id %}" class="button">Join</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No sessions available on this date.</p>
+        {% endif %}
+        <div class="navigation-buttons">
+            <a href="{% url 'available_dates' %}" class="button">Back to Dates</a>
+            <a href="{% url 'member_dashboard' %}" class="button">Back to Dashboard</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All Classes</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Your Classes</h1>
+    </header>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Space</th>
+                    <th>Duration</th>
+                    <th>Members</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in classes %}
+                <tr>
+                    <td>{{ session.date }}</td>
+                    <td>{{ session.time }}</td>
+                    <td>{{ session.space.name }}</td>
+                    <td>{{ session.duration }} minutes</td>
+                    <td>
+                        {% for join in session.memberjoinssession_set.all %}
+                            {{ join.member.first_name }} {{ join.member.last_name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            None
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'trainer_dashboard' %}" class="button">Back to Dashboard</a>
+    </main>
+</body>
+</html>

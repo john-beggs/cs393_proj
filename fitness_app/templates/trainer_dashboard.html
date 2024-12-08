@@ -4,25 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Member Dashboard</title>
+    <title>Trainer Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <header>
         <h1>Welcome, {{ user.username }}!</h1>
-        <div class="top-right">
-            <a href="{% url 'edit_my_info' %}" class="button">Edit My Information</a>
-        </div>
-    </header>    
+    </header>
     <main>
         <section class="dashboard-container">
             <h2>Your Dashboard</h2>
-            <p>Track your fitness progress and manage your sessions here.</p>
+            <p>Manage your classes here.</p>
             <div class="button-container">
-                <a href="{% url 'log_food_intake' %}" class="button">Log Food Intake</a>
-                <a href="{% url 'view_fines' member_id=user.id %}" class="button">View Payments and Fines</a>
-                <a href="{% url 'available_dates' %}" class="button">Join a Training Session</a>
-                <a href="{% url 'joined_sessions' %}" class="button">View Joined Sessions</a>
+                <a href="{% url 'mark_attendance' %}" class="button">Attendance</a>
+                <a href="{% url 'view_all_classes' %}" class="button">View All Classes</a>
+                <a href="{% url 'delete_class' %}" class="button">Delete Available Class</a>
                 <a href="{% url 'logout' %}" class="button logout-button">Logout</a>
             </div>
         </section>
