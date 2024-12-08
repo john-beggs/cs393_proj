@@ -16,11 +16,11 @@
         <form method="post" class="login-form">
             {% csrf_token %}
             {{ form.as_p }}
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
             <button type="submit" class="button">Login</button>
         </form>
     </div>
-    <footer>
-        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
-    </footer>
 </body>
 </html>

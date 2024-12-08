@@ -39,5 +39,14 @@ urlpatterns = [
     path('track-payment/', views.track_payment, name='track_payment'),
     path('update-payment/<int:payment_id>/', views.update_payment, name='update_payment'),
     path('view-fines/<int:member_id>/', views.view_fines, name='view_fines'),
+    path('available-dates/', views.available_dates, name='available_dates'),
+    path('sessions-by-date/<str:selected_date>/', views.sessions_by_date, name='sessions_by_date'),
+    path('join-session/<int:session_id>/', views.join_session, name='join_session'),
+    path('joined-sessions/', views.joined_sessions, name='joined_sessions'),
+    path('mark-attendance/', views.mark_attendance, name='mark_attendance'),
+    path('view-all-classes/', views.view_all_classes, name='view_all_classes'),
+    path('delete-class/', views.delete_class, name='delete_class'),
+    path("search-member/", views.search_member, name="search_member"),
+    path("edit-member/<int:member_id>/", views.edit_member, name="edit_member"),
+    path("edit-my-info/", views.edit_my_info, name="edit_my_info"),
 ]
-

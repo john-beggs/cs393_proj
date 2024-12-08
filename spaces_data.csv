@@ -1,10 +1,10 @@
-name,is_available
-Yoga Studio,False
-Treadmill Room,True
-Weight Room 1,True
-Weight Room 2,False
-Weight Room 3,False
-Boxing Gym,True
-CrossFit Gym,False
-Wind Tunnel,True
-Dance Studio,True
+name
+Yoga Studio
+Treadmill Room
+Weight Room 1
+Weight Room 2
+Weight Room 3
+Boxing Gym
+CrossFit Gym
+Wind Tunnel
+Dance Studio

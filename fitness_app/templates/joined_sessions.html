@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Your Joined Sessions</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Your Training Sessions</h1>
+    </header>
+    <main>
+        {% if joined_sessions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Trainer</th>
+                        <th>Room</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for join in joined_sessions %}
+                        <tr>
+                            <td>{{ join.session.date }}</td>
+                            <td>{{ join.session.time }}</td>
+                            <td>{{ join.session.trainer.first_name }} {{ join.session.trainer.last_name }}</td>
+                            <td>{{ join.session.space.name }}</td>
+                            <td>{{ join.session.duration }} minutes</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>You have not joined any sessions yet.</p>
+        {% endif %}
+        <div class="navigation-buttons">
+            <a href="{% url 'available_dates' %}" class="button">Join a Session</a>
+            <a href="{% url 'member_dashboard' %}" class="button">Back to Dashboard</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Fuzz Fitness | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit Member Information</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Edit Member Information</h1>
+    </header>
+    <main>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="button">Save Changes</button>
+        </form>
+        <a href="{% url 'search_member' %}" class="button">Back to Search</a>
+        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
+    </main>
+</body>
+</html>

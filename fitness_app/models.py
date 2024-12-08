@@ -87,7 +87,6 @@ class Space(models.Model):
     ]
 
     name = models.CharField(max_length=50, choices=SPACE_CHOICES, unique=True)
-    is_available = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -160,3 +159,14 @@ class Fine(models.Model):
 
     def __str__(self):
         return f"Fine for Payment {self.payment.id}: ${self.amount}"
+
+class MemberJoinsSession(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    session = models.ForeignKey(TrainingSession, on_delete=models.CASCADE)
+    joined_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('member', 'session')
+
+    def __str__(self):
+        return f"{self.member.first_name} {self.member.last_name} joined {self.session}"

@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Search Members</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Search Member Information</h1>
+    </header>
+    <main>
+        <form method="GET" action="{% url 'search_member' %}">
+            <label for="first_name">First Name:</label>
+            <input type="text" name="first_name" id="first_name">
+
+            <label for="last_name">Last Name:</label>
+            <input type="text" name="last_name" id="last_name">
+
+            <button type="submit" class="button">Search</button>
+        </form>
+
+        {% if members %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.first_name }}</td>
+                            <td>{{ member.last_name }}</td>
+                            <td>{{ member.city }}</td>
+                            <td>{{ member.state }}</td>
+                            <td>
+                                <a href="{% url 'edit_member' member.id %}" class="button">Edit</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No members found. Try adjusting your search criteria.</p>
+        {% endif %}
+
+        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
+    </main>
+</body>
+</html>
