@@ -142,20 +142,14 @@ class Command(BaseCommand):
                 for row in reader:
                     try:
                         TrainingSession.objects.create(
-                            first_name=row['first_name'],
-                            last_name=row['last_name'],
-                            street_address=row['street_address'],
-                            city=row['city'],
-                            state=row['state'],
-                            zipcode=row['zipcode'],
-                            date_of_birth=row['date_of_birth'],
-                            goal_description=row['goal_description'],
-                            goal_date=row['goal_date'],
-                            goal_weight=row['goal_weight'],
-                            date_joined=row['date_joined'],
+                            trainer_id = row['trainer_id'],
+                            space_id = row['room_id'],
+                            date = datetime.strptime(row['date'], '%m/%d/%Y').strftime('%Y-%m-%d'),
+                            time = row['time'],
+                            duration = row['duration']
                         )
                     except Exception as session_error:
                         self.stderr.write(self.style.ERROR(f'Error processing session: {row}. {session_error}'))
-            self.stdout.write(self.style.SUCCESS('Members loaded successfully'))
+            self.stdout.write(self.style.SUCCESS('Session loaded successfully'))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'Error loading session: {e}'))
