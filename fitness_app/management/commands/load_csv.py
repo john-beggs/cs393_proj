@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from fitness_app.models import Trainer, Food, Member, Payment, Fine, Space
+from fitness_app.models import Trainer, Food, Member, Payment, Fine, Space, TrainingSession
 import csv
 import os
 from datetime import datetime
@@ -20,53 +20,53 @@ class Command(BaseCommand):
         spaces_csv = os.path.join(base_dir, 'spaces_data.csv')
 
         # Load Payments
-        try:
-            with open(payments_csv, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    Payment.objects.create(
-                        member_id=row['member_id'],
-                        amount_due=row['amount_due'],
-                        due_date=datetime.strptime(row['due_date'], "%Y-%m-%d").date(),
-                        payment_date=datetime.strptime(row['payment_date'], "%Y-%m-%d").date() if row['payment_date'] else None,
-                        is_paid=row['is_paid'] == 'True',
-                        fine_amount=row['fine_amount']
-                    )
-            self.stdout.write(self.style.SUCCESS('Payments loaded successfully'))
-        except Exception as e:
-            self.stderr.write(self.style.ERROR(f'Error loading payments: {e}'))
+        # try:
+        #     with open(payments_csv, newline='', encoding='utf-8') as csvfile:
+        #         reader = csv.DictReader(csvfile)
+        #         for row in reader:
+        #             Payment.objects.create(
+        #                 member_id=row['member_id'],
+        #                 amount_due=row['amount_due'],
+        #                 due_date=datetime.strptime(row['due_date'], "%Y-%m-%d").date(),
+        #                 payment_date=datetime.strptime(row['payment_date'], "%Y-%m-%d").date() if row['payment_date'] else None,
+        #                 is_paid=row['is_paid'] == 'True',
+        #                 fine_amount=row['fine_amount']
+        #             )
+        #     self.stdout.write(self.style.SUCCESS('Payments loaded successfully'))
+        # except Exception as e:
+        #     self.stderr.write(self.style.ERROR(f'Error loading payments: {e}'))
 
 
-        # Load Fines
-        try:
-            with open(fines_csv, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    if Payment.objects.filter(id=row['payment_id']).exists():
-                        Fine.objects.create(
-                            payment_id=row['payment_id'],
-                            amount=row['amount'],
-                            issued_date=datetime.strptime(row['issued_date'], "%Y-%m-%d").date()
-                        )
-                    else:
-                        self.stderr.write(self.style.WARNING(f"Skipping fine with invalid payment_id: {row['payment_id']}"))
-            self.stdout.write(self.style.SUCCESS('Fines loaded successfully'))
-        except Exception as e:
-            self.stderr.write(self.style.ERROR(f'Error loading fines: {e}'))
+        # # Load Fines
+        # try:
+        #     with open(fines_csv, newline='', encoding='utf-8') as csvfile:
+        #         reader = csv.DictReader(csvfile)
+        #         for row in reader:
+        #             if Payment.objects.filter(id=row['payment_id']).exists():
+        #                 Fine.objects.create(
+        #                     payment_id=row['payment_id'],
+        #                     amount=row['amount'],
+        #                     issued_date=datetime.strptime(row['issued_date'], "%Y-%m-%d").date()
+        #                 )
+        #             else:
+        #                 self.stderr.write(self.style.WARNING(f"Skipping fine with invalid payment_id: {row['payment_id']}"))
+        #     self.stdout.write(self.style.SUCCESS('Fines loaded successfully'))
+        # except Exception as e:
+        #     self.stderr.write(self.style.ERROR(f'Error loading fines: {e}'))
 
 
         # Load Spaces
-        try:
-            with open(spaces_csv, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    Space.objects.create(
-                        name=row['name'],
-                        is_available=row['is_available'] == 'True'
-                    )
-            self.stdout.write(self.style.SUCCESS('Spaces loaded successfully'))
-        except Exception as e:
-            self.stderr.write(self.style.ERROR(f'Error loading spaces: {e}'))
+        # try:
+        #     with open(spaces_csv, newline='', encoding='utf-8') as csvfile:
+        #         reader = csv.DictReader(csvfile)
+        #         for row in reader:
+        #             Space.objects.create(
+        #                 name=row['name'],
+        #                 is_available=row['is_available'] == 'True'
+        #             )
+        #     self.stdout.write(self.style.SUCCESS('Spaces loaded successfully'))
+        # except Exception as e:
+        #     self.stderr.write(self.style.ERROR(f'Error loading spaces: {e}'))
 
 
         # trainers_csv = os.path.join(base_dir, 'trainers_famous_actors.csv')
