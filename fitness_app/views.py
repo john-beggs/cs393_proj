@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import MemberRegistrationForm, TrainingSessionForm, UpdateGoalsForm, LogSessionForm, FoodLogForm
+from .forms import MemberRegistrationForm, TrainingSessionForm, UpdateGoalsForm, FoodLogForm
 from .models import Member, TrainingSession, Trainer, FoodLog, Food
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -51,18 +51,11 @@ def schedule_training_session(request):
     if request.method == "POST":
         form = TrainingSessionForm(request.POST)
         if form.is_valid():
-            session = form.save(commit=False)
-
-            if session.space.is_available:
-                session.save()
-                return redirect('index')
-            else:
-                return render(request, 'schedule_training_session.html', {
-                    'form': form,
-                    'error': 'The selected space is not available.',
-                })
+            session = form.save()
+            return redirect('index')
     else:
         form = TrainingSessionForm()
+
     return render(request, 'schedule_training_session.html', {'form': form})
 
 
@@ -76,21 +69,6 @@ def update_goals(request, member_id):
     else:
         form = UpdateGoalsForm(instance=member)
     return render(request, 'update_goals.html', {'form': form, 'member': member})
-
-
-def log_session(request, session_id):
-    session = get_object_or_404(TrainingSession, id=session_id)
-    if request.method == "POST":
-        form = LogSessionForm(request.POST, instance=session)
-        if form.is_valid():
-            form.save()
-            return redirect('index')
-    else:
-        form = LogSessionForm(instance=session)
-    return render(request, 'log_session.html', {
-        'form': form,
-        'session': session,
-    })
 
 
 def log_food_intake(request):

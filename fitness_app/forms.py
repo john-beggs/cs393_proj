@@ -1,10 +1,9 @@
 from django import forms
 from .models import Member, Trainer, Space, TrainingSession, FoodLog, Food, Fine, Payment
-
-
+from datetime import datetime, timedelta, date
+from django.db.models import Q, F  # Import Q and F
 # RECEPTIONIST TASKS ?????
 
-from datetime import date
 
 class MemberRegistrationForm(forms.ModelForm):
     YEAR_CHOICES = [(year, year) for year in range(1930, date.today().year + 1)]
@@ -83,7 +82,7 @@ class TrainingSessionForm(forms.ModelForm):
     date_day = forms.ChoiceField(choices=DAY_CHOICES, label="Day")
 
     HOUR_CHOICES = [(hour, f"{hour:02d}") for hour in range(24)]
-    MINUTE_CHOICES = [(minute, f"{minute:02d}") for minute in range(60)]
+    MINUTE_CHOICES = [(minute, f"{minute:02d}") for minute in range(0, 60, 15)]
     time_hour = forms.ChoiceField(choices=HOUR_CHOICES, label="Hour")
     time_minute = forms.ChoiceField(choices=MINUTE_CHOICES, label="Minute")
 
@@ -97,26 +96,76 @@ class TrainingSessionForm(forms.ModelForm):
 
     class Meta:
         model = TrainingSession
-        fields = ['member', 'trainer', 'space']
+        fields = ['trainer', 'space', 'date', 'time', 'duration']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        trainer = cleaned_data.get('trainer')
+        room = cleaned_data.get('space')
+        year = int(cleaned_data.get('date_year'))
+        month = int(cleaned_data.get('date_month'))
+        day = int(cleaned_data.get('date_day'))
+        hour = int(cleaned_data.get('time_hour'))
+        minute = int(cleaned_data.get('time_minute'))
+        duration = cleaned_data.get('duration')
+
+        # Combine date and time into datetime objects
+        session_date = date(year, month, day)
+        start_time = datetime.combine(session_date, datetime.min.time()).replace(hour=hour, minute=minute)
+        duration_td = timedelta(
+            hours=int(duration.split(":")[0]),
+            minutes=int(duration.split(":")[1])
+        )
+        end_time = start_time + duration_td
+
+        # Validate trainer's schedule
+        trainer_overlap = TrainingSession.objects.filter(
+            trainer=trainer,
+            date=session_date,
+        ).filter(
+            Q(time__lt=end_time.time(), time__gte=start_time.time()) |
+            Q(
+                F('time') + timedelta(minutes=F('duration')) > start_time.time(),
+                F('time') + timedelta(minutes=F('duration')) <= end_time.time()
+            ) |
+            Q(time__lte=start_time.time(), time__gte=end_time.time())
+        ).exists()
+
+        if trainer_overlap:
+            self.add_error('trainer', "The trainer is already booked during this time.")
+
+        # Validate room's schedule
+        room_overlap = TrainingSession.objects.filter(
+            space=room,
+            date=session_date,
+        ).filter(
+            Q(time__lt=end_time.time(), time__gte=start_time.time()) |
+            Q(
+                F('time') + timedelta(minutes=F('duration')) > start_time.time(),
+                F('time') + timedelta(minutes=F('duration')) <= end_time.time()
+            ) |
+            Q(time__lte=start_time.time(), time__gte=end_time.time())
+        ).exists()
+
+        if room_overlap:
+            self.add_error('space', "The room is already booked during this time.")
+
+        return cleaned_data
 
     def save(self, commit=True):
         session = super().save(commit=False)
 
+        # Construct the date and time fields
         session.date = date(
             int(self.cleaned_data['date_year']),
             int(self.cleaned_data['date_month']),
             int(self.cleaned_data['date_day']),
         )
-        session.time = f"{self.cleaned_data['time_hour']}:{self.cleaned_data['time_minute']}:00"
+        session.time = f"{int(self.cleaned_data['time_hour']):02}:{int(self.cleaned_data['time_minute']):02}:00"
 
         if commit:
             session.save()
         return session
-
-class LogSessionForm(forms.ModelForm):
-    class Meta:
-        model = TrainingSession
-        fields = ['attendance', 'progress_notes']
 
 
 class FineForm(forms.ModelForm):

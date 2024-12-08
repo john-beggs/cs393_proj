@@ -14,32 +14,62 @@
     <main>
         <form method="post" class="form-container">
             {% csrf_token %}
+            <!-- Display global form errors -->
+            {% if form.non_field_errors %}
+                <div class="error-container">
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <!-- Form fields with inline error display -->
             <div>
                 <label for="id_member">Member:</label>
                 {{ form.member }}
+                {% if form.member.errors %}
+                    <span class="error">{{ form.member.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <div>
                 <label for="id_trainer">Trainer:</label>
                 {{ form.trainer }}
+                {% if form.trainer.errors %}
+                    <span class="error">{{ form.trainer.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <div>
                 <label for="id_space">Space:</label>
                 {{ form.space }}
+                {% if form.space.errors %}
+                    <span class="error">{{ form.space.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <div>
                 <label>Date:</label>
                 {{ form.date_year }}
                 {{ form.date_month }}
                 {{ form.date_day }}
+                {% if form.date_year.errors or form.date_month.errors or form.date_day.errors %}
+                    <span class="error">{{ form.date_year.errors|join:", " }} {{ form.date_month.errors|join:", " }} {{ form.date_day.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <div>
                 <label>Time:</label>
                 {{ form.time_hour }}
                 {{ form.time_minute }}
+                {% if form.time_hour.errors or form.time_minute.errors %}
+                    <span class="error">{{ form.time_hour.errors|join:", " }} {{ form.time_minute.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <div>
                 <label for="id_duration">Duration:</label>
                 {{ form.duration }}
+                {% if form.duration.errors %}
+                    <span class="error">{{ form.duration.errors|join:", " }}</span>
+                {% endif %}
             </div>
             <button type="submit" class="button">Schedule</button>
         </form>

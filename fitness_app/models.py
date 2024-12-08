@@ -97,7 +97,7 @@ class TrainingSession(models.Model):
     space = models.ForeignKey(Space, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
-    duration = models.DurationField()
+    duration = models.PositiveIntegerField()
 
     def __str__(self):
         return f"Session in {self.space.name} with {self.trainer.first_name} {self.trainer.last_name} on {self.date}"
