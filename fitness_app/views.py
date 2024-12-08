@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from fitness_app.models import UserRole, Member, Payment, Fine
 from datetime import datetime, timedelta
 from django.http import JsonResponse
-from datetime import date
+from datetime import date, time
 from django.db.models import Q
 
 
@@ -52,11 +52,15 @@ def schedule_training_session(request):
         form = TrainingSessionForm(request.POST)
         if form.is_valid():
             session = form.save()
-            return redirect('index')
+            return redirect('receptionist_dashboard')
     else:
         form = TrainingSessionForm()
 
-    return render(request, 'schedule_training_session.html', {'form': form})
+    # Add composite date fields to the context
+    date_fields = [form['date_year'], form['date_month'], form['date_day']]
+
+    return render(request, 'schedule_training_session.html', {'form': form, 'date_fields': date_fields})
+
 
 
 def update_goals(request, member_id):

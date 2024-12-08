@@ -27,13 +27,6 @@
             
             <!-- Form fields with inline error display -->
             <div>
-                <label for="id_member">Member:</label>
-                {{ form.member }}
-                {% if form.member.errors %}
-                    <span class="error">{{ form.member.errors|join:", " }}</span>
-                {% endif %}
-            </div>
-            <div>
                 <label for="id_trainer">Trainer:</label>
                 {{ form.trainer }}
                 {% if form.trainer.errors %}
@@ -49,12 +42,12 @@
             </div>
             <div>
                 <label>Date:</label>
-                {{ form.date_year }}
-                {{ form.date_month }}
-                {{ form.date_day }}
-                {% if form.date_year.errors or form.date_month.errors or form.date_day.errors %}
-                    <span class="error">{{ form.date_year.errors|join:", " }} {{ form.date_month.errors|join:", " }} {{ form.date_day.errors|join:", " }}</span>
-                {% endif %}
+                {% for field in date_fields %}
+                    {{ field }}
+                    {% if field.errors %}
+                        <span class="error">{{ field.errors|join:", " }}</span>
+                    {% endif %}
+                {% endfor %}
             </div>
             <div>
                 <label>Time:</label>

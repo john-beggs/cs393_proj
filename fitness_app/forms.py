@@ -1,6 +1,6 @@
 from django import forms
 from .models import Member, Trainer, Space, TrainingSession, FoodLog, Food, Fine, Payment
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 from django.db.models import Q, F  # Import Q and F
 # RECEPTIONIST TASKS ?????
 
@@ -73,96 +73,93 @@ class MemberRegistrationForm(forms.ModelForm):
 
 
 class TrainingSessionForm(forms.ModelForm):
-    YEAR_CHOICES = [(year, year) for year in range(2023, 2029)]
-    MONTH_CHOICES = [(month, month) for month in range(1, 13)]
-    DAY_CHOICES = [(day, day) for day in range(1, 32)]
-
-    date_year = forms.ChoiceField(choices=YEAR_CHOICES, label="Year")
-    date_month = forms.ChoiceField(choices=MONTH_CHOICES, label="Month")
-    date_day = forms.ChoiceField(choices=DAY_CHOICES, label="Day")
-
-    HOUR_CHOICES = [(hour, f"{hour:02d}") for hour in range(24)]
-    MINUTE_CHOICES = [(minute, f"{minute:02d}") for minute in range(0, 60, 15)]
-    time_hour = forms.ChoiceField(choices=HOUR_CHOICES, label="Hour")
-    time_minute = forms.ChoiceField(choices=MINUTE_CHOICES, label="Minute")
-
-    DURATION_CHOICES = [
-        ("00:30:00", "30 Minutes"),
-        ("00:45:00", "45 Minutes"),
-        ("01:00:00", "1 Hour"),
-        ("01:30:00", "1 Hour 30 Minutes"),
-    ]
-    duration = forms.ChoiceField(choices=DURATION_CHOICES, label="Duration")
-
+    date_year = forms.ChoiceField(choices=[(y, y) for y in range(2023, 2030)], required=True)
+    date_month = forms.ChoiceField(choices=[(m, m) for m in range(1, 13)], required=True)
+    date_day = forms.ChoiceField(choices=[(d, d) for d in range(1, 32)], required=True)
+    time_hour = forms.ChoiceField(choices=[(h, f"{h:02}") for h in range(24)], required=True)
+    time_minute = forms.ChoiceField(choices=[(m, f"{m:02}") for m in range(0, 60, 15)], required=True)
+    duration = forms.ChoiceField(
+        choices=[(30, "30 Minutes"), (45, "45 Minutes"), (60, "1 Hour"), (90, "1 Hour 30 Minutes")],
+        required=True,
+        label="Duration"
+    )
+    
     class Meta:
         model = TrainingSession
-        fields = ['trainer', 'space', 'date', 'time', 'duration']
+        fields = ['trainer', 'space', 'duration']
 
     def clean(self):
         cleaned_data = super().clean()
+
+        # Combine year, month, and day into a single date field
+        try:
+            year = int(cleaned_data.get('date_year'))
+            month = int(cleaned_data.get('date_month'))
+            day = int(cleaned_data.get('date_day'))
+            session_date = date(year, month, day)
+            cleaned_data['date'] = session_date
+        except (ValueError, TypeError):
+            self.add_error('date_year', "Invalid date. Please provide a valid year, month, and day.")
+            return cleaned_data
+
+        # Combine hour and minute into a single time field
+        try:
+            hour = int(cleaned_data.get('time_hour'))
+            minute = int(cleaned_data.get('time_minute'))
+            session_time = time(hour, minute)
+            cleaned_data['time'] = session_time
+        except (ValueError, TypeError):
+            self.add_error('time_hour', "Invalid time. Please provide a valid hour and minute.")
+            return cleaned_data
+
+        # Get duration and calculate end time
+        try:
+            duration = int(cleaned_data.get('duration'))
+        except (ValueError, TypeError):
+            self.add_error('duration', "Invalid duration. Please select a valid option.")
+            return cleaned_data
+
+        start_datetime = datetime.combine(session_date, session_time)
+        end_datetime = start_datetime + timedelta(minutes=duration)
+
+        # Check for trainer and room conflicts
         trainer = cleaned_data.get('trainer')
         room = cleaned_data.get('space')
-        year = int(cleaned_data.get('date_year'))
-        month = int(cleaned_data.get('date_month'))
-        day = int(cleaned_data.get('date_day'))
-        hour = int(cleaned_data.get('time_hour'))
-        minute = int(cleaned_data.get('time_minute'))
-        duration = cleaned_data.get('duration')
 
-        # Combine date and time into datetime objects
-        session_date = date(year, month, day)
-        start_time = datetime.combine(session_date, datetime.min.time()).replace(hour=hour, minute=minute)
-        duration_td = timedelta(
-            hours=int(duration.split(":")[0]),
-            minutes=int(duration.split(":")[1])
-        )
-        end_time = start_time + duration_td
+        if trainer:
+            trainer_overlap = TrainingSession.objects.filter(
+                trainer=trainer,
+                date=session_date,
+            ).filter(
+                Q(time__lt=end_datetime.time(), time__gte=start_datetime.time())
+                | Q(time__lte=start_datetime.time(), time__gte=end_datetime.time())
+            ).exists()
 
-        # Validate trainer's schedule
-        trainer_overlap = TrainingSession.objects.filter(
-            trainer=trainer,
-            date=session_date,
-        ).filter(
-            Q(time__lt=end_time.time(), time__gte=start_time.time()) |
-            Q(
-                F('time') + timedelta(minutes=F('duration')) > start_time.time(),
-                F('time') + timedelta(minutes=F('duration')) <= end_time.time()
-            ) |
-            Q(time__lte=start_time.time(), time__gte=end_time.time())
-        ).exists()
+            if trainer_overlap:
+                self.add_error('trainer', "This trainer is already booked during the selected time.")
 
-        if trainer_overlap:
-            self.add_error('trainer', "The trainer is already booked during this time.")
+        if room:
+            room_overlap = TrainingSession.objects.filter(
+                space=room,
+                date=session_date,
+            ).filter(
+                Q(time__lt=end_datetime.time(), time__gte=start_datetime.time())
+                | Q(time__lte=start_datetime.time(), time__gte=end_datetime.time())
+            ).exists()
 
-        # Validate room's schedule
-        room_overlap = TrainingSession.objects.filter(
-            space=room,
-            date=session_date,
-        ).filter(
-            Q(time__lt=end_time.time(), time__gte=start_time.time()) |
-            Q(
-                F('time') + timedelta(minutes=F('duration')) > start_time.time(),
-                F('time') + timedelta(minutes=F('duration')) <= end_time.time()
-            ) |
-            Q(time__lte=start_time.time(), time__gte=end_time.time())
-        ).exists()
-
-        if room_overlap:
-            self.add_error('space', "The room is already booked during this time.")
+            if room_overlap:
+                self.add_error('space', "This space is already booked during the selected time.")
 
         return cleaned_data
 
     def save(self, commit=True):
-        session = super().save(commit=False)
-
-        # Construct the date and time fields
+        session = super().save(commit=False)  # Do not save yet
         session.date = date(
             int(self.cleaned_data['date_year']),
             int(self.cleaned_data['date_month']),
             int(self.cleaned_data['date_day']),
         )
         session.time = f"{int(self.cleaned_data['time_hour']):02}:{int(self.cleaned_data['time_minute']):02}:00"
-
         if commit:
             session.save()
         return session
