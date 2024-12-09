@@ -10,6 +10,7 @@ from datetime import date, time
 from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
+from django.urls import reverse
 
 def check_role(user, required_role):
     try:
@@ -426,7 +427,14 @@ def track_payment(request):
     if user_role not in ["Receptionist", "Manager"]:
         return render(request, "error.html", {"message": "Access Denied"})
 
-    search_query = request.GET.get('search', '').strip()
+    if user_role == "Receptionist":
+        dashboard_url = reverse("receptionist_dashboard")
+    elif user_role == "Manager":
+        dashboard_url = reverse("manager_dashboard")
+    else:
+        dashboard_url = reverse("login")
+
+    search_query = request.GET.get("search", "").strip()
 
     if search_query:
         name_parts = search_query.split(" ", 1)
@@ -435,8 +443,8 @@ def track_payment(request):
 
         if last_name:
             members = Member.objects.filter(
-                first_name__icontains=first_name, 
-                last_name__icontains=last_name
+                first_name__icontains=first_name,
+                last_name__icontains=last_name,
             ).prefetch_related("payments")
         else:
             members = Member.objects.filter(
@@ -445,8 +453,9 @@ def track_payment(request):
     else:
         members = Member.objects.prefetch_related("payments").all()
 
-    return render(request, "track_payment.html", {"members": members})
-
+    return render(
+        request, "track_payment.html", {"members": members, "dashboard_url": dashboard_url}
+    )
 
 
 @login_required

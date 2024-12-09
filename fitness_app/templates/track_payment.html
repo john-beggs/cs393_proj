@@ -17,7 +17,7 @@
             <input type="text" name="search" id="search_member" placeholder="Enter Member Name" value="{{ request.GET.search }}">
             <button type="submit" class="button">Search</button>
         </form>
-        <a href="{% url 'receptionist_dashboard' %}" class="button">Back to Dashboard</a>
+        <a href="{{ dashboard_url }}" class="button">Back to Dashboard</a>
         <table>
             <thead>
                 <tr>
