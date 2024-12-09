@@ -597,17 +597,22 @@ def mark_attendance(request):
     if not check_role(request.user, "Trainer"):
         return render(request, "error.html", {"message": "Access Denied"})
 
-    trainer = Trainer.objects.get(user=request.user)
-    sessions = TrainingSession.objects.filter(trainer=trainer)
+    sessions = TrainingSession.objects.filter(trainer__user=request.user)
 
     if request.method == "POST":
         session_id = request.POST.get("session_id")
         member_ids = request.POST.getlist("attendance")
 
-        for member_id in member_ids:
-            MemberJoinsSession.objects.filter(session_id=session_id, member_id=member_id).update(attended=True)
+        if session_id:
+            session = get_object_or_404(TrainingSession, id=session_id)
 
-        return redirect("mark_attendance")
+            # Reset attendance for all members in the session
+            MemberJoinsSession.objects.filter(session=session).update(attended=False)
+
+            # Update attendance for the selected members
+            MemberJoinsSession.objects.filter(session=session, member__id__in=member_ids).update(attended=True)
+
+        return redirect("trainer_dashboard")
 
     return render(request, "mark_attendance.html", {"sessions": sessions})
 
