@@ -166,6 +166,7 @@ class MemberJoinsSession(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     session = models.ForeignKey(TrainingSession, on_delete=models.CASCADE)
     joined_date = models.DateTimeField(auto_now_add=True)
+    attended = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('member', 'session')

@@ -6,6 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mark Attendance</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sessionDropdown = document.getElementById("session_id");
+            const memberContainers = document.querySelectorAll(".members-for-session");
+
+            // Hide all member containers initially
+            memberContainers.forEach(container => container.style.display = "none");
+
+            sessionDropdown.addEventListener("change", function () {
+                // Hide all member containers
+                memberContainers.forEach(container => container.style.display = "none");
+
+                // Show the selected session's member container
+                const selectedSessionId = sessionDropdown.value;
+                const selectedContainer = document.getElementById(`members-${selectedSessionId}`);
+                if (selectedContainer) {
+                    selectedContainer.style.display = "block";
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <header>
@@ -16,6 +37,7 @@
             {% csrf_token %}
             <label for="session_id">Select a Session:</label>
             <select name="session_id" id="session_id" required>
+                <option value="" disabled selected>Select a session</option>
                 {% for session in sessions %}
                     <option value="{{ session.id }}">
                         {{ session.date }} | {{ session.time }} | {{ session.space.name }}
@@ -31,7 +53,7 @@
                         {% for join in session.memberjoinssession_set.all %}
                             <li>
                                 <label>
-                                    <input type="checkbox" name="attendance" value="{{ join.member.id }}">
+                                    <input type="checkbox" name="attendance" value="{{ join.member.id }}" {% if join.attended %}checked{% endif %}>
                                     {{ join.member.first_name }} {{ join.member.last_name }}
                                 </label>
                             </li>
