@@ -9,7 +9,40 @@ from django.http import JsonResponse
 from datetime import date, time
 from django.db.models import Q
 from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
 
+def check_role(user, required_role):
+    try:
+        user_role = UserRole.objects.get(user=user).role.name
+        return user_role == required_role
+    except UserRole.DoesNotExist:
+        return False
+
+
+def custom_login(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            try:
+                user_role = UserRole.objects.get(user=user).role.name
+                if user_role == "Receptionist":
+                    return redirect("receptionist_dashboard")
+                elif user_role == "Trainer":
+                    return redirect("trainer_dashboard")
+                elif user_role == "Member":
+                    return redirect("member_dashboard")
+                elif user_role == "Manager":
+                    return redirect("manager_dashboard")
+            except UserRole.DoesNotExist:
+                return render(request, "error.html", {"message": "No role assigned. Please contact an administrator."})
+        else:
+            return render(request, "login.html", {"error": "Invalid username or password"})
+
+    return render(request, "login.html")
 
 @login_required
 def dashboard(request):
@@ -19,15 +52,37 @@ def dashboard(request):
         return redirect("login")
 
     if user_role == "Receptionist":
-        return render(request, "receptionist_dashboard.html")
+        return redirect("receptionist_dashboard")
     elif user_role == "Trainer":
-        return render(request, "trainer_dashboard.html")
+        return redirect("trainer_dashboard")
     elif user_role == "Member":
-        return render(request, "member_dashboard.html")
+        return redirect("member_dashboard")
     elif user_role == "Manager":
-        return render(request, "manager_dashboard.html")
+        return redirect("manager_dashboard")
 
     return render(request, "error.html", {"message": "No dashboard available for your role."})
+
+@login_required
+def member_dashboard(request):
+    try:
+        user_role = UserRole.objects.get(user=request.user).role.name
+        if user_role != "Member":
+            return render(request, "error.html", {"message": "Access Denied"})
+
+        member = Member.objects.get(user=request.user)
+        food_logs = FoodLog.objects.filter(member=request.user)
+        joined_sessions = MemberJoinsSession.objects.filter(member=member)
+
+        context = {
+            "member": member,
+            "food_logs": food_logs,
+            "joined_sessions": joined_sessions,
+        }
+        return render(request, "member_dashboard.html", context)
+
+    except Member.DoesNotExist:
+        return render(request, "error.html", {"message": "No member profile found."})
+
 
 ##### RECEPTIONIST STUFF
 
@@ -47,6 +102,12 @@ def register_member(request):
     else:
         form = MemberRegistrationForm()
     return render(request, "register_member.html", {"form": form})
+
+def receptionist_dashboard(request):
+    user_role = UserRole.objects.get(user=request.user).role.name
+    if user_role != "Receptionist":
+        return render(request, "error.html", {"message": "Access Denied"})
+    return render(request, "receptionist_dashboard.html")
 
 @login_required
 def search_member(request):
@@ -125,15 +186,10 @@ def update_goals(request, member_id):
 
 @login_required
 def edit_my_info(request):
-    try:
-        user_role = UserRole.objects.get(user=request.user).role.name
-    except UserRole.DoesNotExist:
-        return redirect("login")
-
-    if user_role != "Member":
+    if not check_role(request.user, "Member"):
         return render(request, "error.html", {"message": "Access Denied"})
 
-    member = get_object_or_404(Member, first_name=request.user.first_name, last_name=request.user.last_name)
+    member = Member.objects.get(user=request.user)
 
     if request.method == "POST":
         form = MemberRegistrationForm(request.POST, instance=member)
@@ -146,67 +202,87 @@ def edit_my_info(request):
     return render(request, "edit_my_info.html", {"form": form, "member": member})
 
 
+@login_required
 def log_food_intake(request):
+    if not check_role(request.user, "Member"):
+        return render(request, "error.html", {"message": "Access Denied"})
+
     categories = Food.objects.values_list('category', flat=True).distinct()
+
+    # Generate dropdown values for years, months, and days
     current_year = date.today().year
-    years = range(current_year - 10, current_year + 5)
-    months = range(1, 13)
-    days = range(1, 32)
+    years = range(current_year - 10, current_year + 1)  # Past 10 years to current year
+    months = range(1, 13)  # 1 to 12 for months
+    days = range(1, 32)  # 1 to 31 for days
 
     if request.method == "POST":
-        meal = request.POST.get('meal')
-        category = request.POST.get('category')
-        description = request.POST.get('description')
-        servings = request.POST.get('servings')
+        meal = request.POST.get("meal")
+        category = request.POST.get("category")
+        description = request.POST.get("description")
+        servings = request.POST.get("servings")
+        year = request.POST.get("date_year")
+        month = request.POST.get("date_month")
+        day = request.POST.get("date_day")
 
+        # Validate and parse the date
+        try:
+            selected_date = date(int(year), int(month), int(day))
+        except (ValueError, TypeError):
+            return render(request, "log_food_intake.html", {
+                "categories": categories,
+                "years": years,
+                "months": months,
+                "days": days,
+                "error_message": "Invalid date selected. Please provide a valid year, month, and day.",
+            })
+
+        # Validate servings
         try:
             servings = float(servings)
             if servings <= 0:
                 raise ValueError
         except ValueError:
-            return render(request, 'log_food_intake.html', {
-                'categories': categories,
-                'years': years,
-                'months': months,
-                'days': days,
-                'error_message': 'Servings must be a positive number.',
+            return render(request, "log_food_intake.html", {
+                "categories": categories,
+                "years": years,
+                "months": months,
+                "days": days,
+                "error_message": "Servings must be a positive number.",
             })
 
+        # Validate food selection
         food_item = Food.objects.filter(category=category, description=description).first()
         if not food_item:
-            return render(request, 'log_food_intake.html', {
-                'categories': categories,
-                'years': years,
-                'months': months,
-                'days': days,
-                'error_message': 'Invalid food selection.',
+            return render(request, "log_food_intake.html", {
+                "categories": categories,
+                "years": years,
+                "months": months,
+                "days": days,
+                "error_message": "Invalid food selection.",
             })
 
-        carbohydrate = food_item.carbohydrate * servings
-        protein = food_item.protein * servings
-        fat = food_item.fat_total_lipid * servings
-        kilocalories = food_item.kilocalories * servings
-
+        # Create food log with the selected date
         FoodLog.objects.create(
             member=request.user,
-            date=date.today(),
+            date=selected_date,  # Use the selected date
             meal=meal,
             category=category,
             description=description,
             servings=servings,
-            carbohydrate=carbohydrate,
-            protein=protein,
-            fat=fat,
-            kilocalories=kilocalories,
+            carbohydrate=food_item.carbohydrate * servings,
+            protein=food_item.protein * servings,
+            fat=food_item.fat_total_lipid * servings,
+            kilocalories=food_item.kilocalories * servings,
         )
-        return redirect('food_summary')
+        return redirect("member_dashboard")
 
-    return render(request, 'log_food_intake.html', {
-        'categories': categories,
-        'years': years,
-        'months': months,
-        'days': days,
+    return render(request, "log_food_intake.html", {
+        "categories": categories,
+        "years": years,
+        "months": months,
+        "days": days,
     })
+
 
 def get_food_details(request):
     if request.method == "GET" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -460,6 +536,22 @@ def sessions_by_date(request, selected_date):
 
 
 @login_required
+def joined_sessions(request):
+    if not check_role(request.user, "Member"):
+        return render(request, "error.html", {"message": "Access Denied"})
+
+    member = Member.objects.get(user=request.user)
+    joined_sessions = MemberJoinsSession.objects.filter(member=member)
+
+    return render(request, "joined_sessions.html", {"joined_sessions": joined_sessions})
+
+@login_required
+def joined_sessions(request):
+    member = Member.objects.get(id=request.user.id)
+    joined_sessions = MemberJoinsSession.objects.filter(member=member)
+    return render(request, "joined_sessions.html", {"joined_sessions": joined_sessions})
+
+@login_required
 def join_session(request, session_id):
     session = get_object_or_404(TrainingSession, id=session_id)
     member = Member.objects.get(id=request.user.id)
@@ -470,47 +562,41 @@ def join_session(request, session_id):
     MemberJoinsSession.objects.create(member=member, session=session)
     return redirect("joined_sessions")
 
-@login_required
-def joined_sessions(request):
-    member = Member.objects.get(id=request.user.id)
-    joined_sessions = MemberJoinsSession.objects.filter(member=member)
-    return render(request, "joined_sessions.html", {"joined_sessions": joined_sessions})
-
-
 #### TRAINER INTERACTING WITH A SESSION
 
 @login_required
 def trainer_dashboard(request):
     try:
         user_role = UserRole.objects.get(user=request.user).role.name
-    except UserRole.DoesNotExist:
-        return redirect("login")
+        if user_role != "Trainer":
+            return render(request, "error.html", {"message": "Access Denied"})
 
-    if user_role != "Trainer":
-        return render(request, "error.html", {"message": "Access Denied"})
+        trainer = Trainer.objects.get(user=request.user)
+        training_sessions = TrainingSession.objects.filter(trainer=trainer)
 
-    return render(request, "trainer_dashboard.html")
+        context = {
+            "trainer": trainer,
+            "training_sessions": training_sessions,
+        }
+        return render(request, "trainer_dashboard.html", context)
 
+    except Trainer.DoesNotExist:
+        return render(request, "error.html", {"message": "No trainer profile found."})
+    
 @login_required
 def mark_attendance(request):
-    try:
-        user_role = UserRole.objects.get(user=request.user).role.name
-    except UserRole.DoesNotExist:
-        return redirect("login")
-
-    if user_role != "Trainer":
+    if not check_role(request.user, "Trainer"):
         return render(request, "error.html", {"message": "Access Denied"})
 
-    sessions = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+    trainer = Trainer.objects.get(user=request.user)
+    sessions = TrainingSession.objects.filter(trainer=trainer)
 
     if request.method == "POST":
         session_id = request.POST.get("session_id")
         member_ids = request.POST.getlist("attendance")
-        
+
         for member_id in member_ids:
-            MemberJoinsSession.objects.filter(
-                training_session_id=session_id, member_id=member_id
-            ).update(attended=True)
+            MemberJoinsSession.objects.filter(session_id=session_id, member_id=member_id).update(attended=True)
 
         return redirect("mark_attendance")
 
@@ -518,33 +604,25 @@ def mark_attendance(request):
 
 @login_required
 def view_all_classes(request):
-    try:
-        user_role = UserRole.objects.get(user=request.user).role.name
-    except UserRole.DoesNotExist:
-        return redirect("login")
-
-    if user_role != "Trainer":
+    if not check_role(request.user, "Trainer"):
         return render(request, "error.html", {"message": "Access Denied"})
 
-    classes = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+    trainer = Trainer.objects.get(user=request.user)
+    classes = TrainingSession.objects.filter(trainer=trainer)
 
     return render(request, "view_all_classes.html", {"classes": classes})
 
 @login_required
 def delete_class(request):
-    try:
-        user_role = UserRole.objects.get(user=request.user).role.name
-    except UserRole.DoesNotExist:
-        return redirect("login")
-
-    if user_role != "Trainer":
+    if not check_role(request.user, "Trainer"):
         return render(request, "error.html", {"message": "Access Denied"})
 
-    classes = TrainingSession.objects.filter(trainer__trainer_id=request.user.id)
+    trainer = Trainer.objects.get(user=request.user)
+    classes = TrainingSession.objects.filter(trainer=trainer)
 
     if request.method == "POST":
         session_id = request.POST.get("session_id")
-        TrainingSession.objects.filter(id=session_id).delete()
+        TrainingSession.objects.filter(id=session_id, trainer=trainer).delete()
         return redirect("delete_class")
 
     return render(request, "delete_class.html", {"classes": classes})

@@ -25,6 +25,7 @@ class UserRole(models.Model):
         return f"{self.user.username} - {self.role.name}"
 
 class Member(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     street_address = models.CharField(max_length=255)
@@ -41,6 +42,7 @@ class Member(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 class Trainer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     trainer_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)

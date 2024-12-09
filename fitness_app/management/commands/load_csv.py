@@ -19,7 +19,7 @@ class Command(BaseCommand):
         fines_csv = os.path.join(base_dir, 'fines_data.csv')
         spaces_csv = os.path.join(base_dir, 'spaces_data.csv')
 
-        # Load Payments
+        # # Load Payments
         # try:
         #     with open(payments_csv, newline='', encoding='utf-8') as csvfile:
         #         reader = csv.DictReader(csvfile)
@@ -37,22 +37,22 @@ class Command(BaseCommand):
         #     self.stderr.write(self.style.ERROR(f'Error loading payments: {e}'))
 
 
-        # # Load Fines
-        # try:
-        #     with open(fines_csv, newline='', encoding='utf-8') as csvfile:
-        #         reader = csv.DictReader(csvfile)
-        #         for row in reader:
-        #             if Payment.objects.filter(id=row['payment_id']).exists():
-        #                 Fine.objects.create(
-        #                     payment_id=row['payment_id'],
-        #                     amount=row['amount'],
-        #                     issued_date=datetime.strptime(row['issued_date'], "%Y-%m-%d").date()
-        #                 )
-        #             else:
-        #                 self.stderr.write(self.style.WARNING(f"Skipping fine with invalid payment_id: {row['payment_id']}"))
-        #     self.stdout.write(self.style.SUCCESS('Fines loaded successfully'))
-        # except Exception as e:
-        #     self.stderr.write(self.style.ERROR(f'Error loading fines: {e}'))
+        # Load Fines
+        try:
+            with open(fines_csv, newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    if Payment.objects.filter(id=row['payment_id']).exists():
+                        Fine.objects.create(
+                            payment_id=row['payment_id'],
+                            amount=row['amount'],
+                            issued_date=datetime.strptime(row['issued_date'], "%Y-%m-%d").date()
+                        )
+                    else:
+                        self.stderr.write(self.style.WARNING(f"Skipping fine with invalid payment_id: {row['payment_id']}"))
+            self.stdout.write(self.style.SUCCESS('Fines loaded successfully'))
+        except Exception as e:
+            self.stderr.write(self.style.ERROR(f'Error loading fines: {e}'))
 
 
         # # Load Spaces
@@ -88,29 +88,29 @@ class Command(BaseCommand):
         # except Exception as e:
         #     self.stderr.write(self.style.ERROR(f'Error loading trainers: {e}'))
 
-        # Load food
-        try:
-            with open(food_csv, newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    try:
-                        Food.objects.create(
-                            category=row['category'],
-                            description=row['description'],
-                            carbohydrate=row['carbohydrate'],
-                            protein=row['protein'],
-                            fat_total_lipid=row['fat_total_lipid'],
-                            kilocalories=row['kilocalories'],
-                            serv_grams=row['serv_grams'],  # Include serv_grams
-                            serv_desc=row['serv_desc'],    # Include serv_desc
-                        )
-                    except Exception as food_error:
-                        self.stderr.write(self.style.ERROR(f"Error processing food: {row}. {food_error}"))
-            self.stdout.write(self.style.SUCCESS('Food loaded successfully'))
-        except Exception as e:
-            self.stderr.write(self.style.ERROR(f'Error loading food: {e}'))
+        # # Load food
+        # try:
+        #     with open(food_csv, newline='', encoding='utf-8') as csvfile:
+        #         reader = csv.DictReader(csvfile)
+        #         for row in reader:
+        #             try:
+        #                 Food.objects.create(
+        #                     category=row['category'],
+        #                     description=row['description'],
+        #                     carbohydrate=row['carbohydrate'],
+        #                     protein=row['protein'],
+        #                     fat_total_lipid=row['fat_total_lipid'],
+        #                     kilocalories=row['kilocalories'],
+        #                     serv_grams=row['serv_grams'],  # Include serv_grams
+        #                     serv_desc=row['serv_desc'],    # Include serv_desc
+        #                 )
+        #             except Exception as food_error:
+        #                 self.stderr.write(self.style.ERROR(f"Error processing food: {row}. {food_error}"))
+        #     self.stdout.write(self.style.SUCCESS('Food loaded successfully'))
+        # except Exception as e:
+        #     self.stderr.write(self.style.ERROR(f'Error loading food: {e}'))
 
-        # # Load members
+        # Load members
         # try:
         #     with open(members_csv, newline='', encoding='utf-8') as csvfile:
         #         reader = csv.DictReader(csvfile)
